@@ -1,0 +1,27 @@
+{
+  "name": "fis-parser-velocity",
+  "version": "0.0.1",
+  "description": "A parser for fis to compile velocity template",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/richard-chen-1985/fis-parser-velocity"
+  },
+  "keywords": [
+    "fis",
+    "template",
+    "velocity"
+  ],
+  "author": "richard chen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/richard-chen-1985/fis-parser-velocity/issues"
+  },
+  "homepage": "https://github.com/richard-chen-1985/fis-parser-velocity",
+  "devDependencies": {
+    "velocity": "^0.7.2"
+  }
+}
