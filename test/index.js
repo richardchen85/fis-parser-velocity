@@ -4,10 +4,12 @@ var path = require('path'),
 
 var content = fs.readFileSync('./index.html', {encoding: 'utf-8'}),
     file = {
-        path: path.resolve('./index.html')
+        realpath: path.resolve('./index.html'),
+        subpath: '\index.html'
     },
     settings = {
-        root: './'
+        encoding: 'utf-8'
     };
 
-velocity(content, file, settings);
+var result = velocity(content, file, settings);
+console.log(result);

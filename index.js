@@ -9,16 +9,13 @@ var Engine = require('velocity').Engine,
  * @return
  *  Object{}
  */
-function getContext(content) {
-    var context = {},
-        dataFiles = [];
+function getContext(widgets, opt) {
+    var context = {};
 
-    dataFiles = getParseFiles(content);console.log(dataFiles)
-    
-    dataFiles.forEach(function(data) {
-        var file = replaceExt(data, 'json');
+    widgets.forEach(function(widget) {
+        var file = path.join(opt.root, replaceExt(widget, 'json'));
         if(fs.existsSync(file)) {
-            var json = JSON.parse(fs.readFileSync(file));
+            var json = JSON.parse(fs.readFileSync(file, { encoding: opt.encoding }));
             for(var cnxt in json) {
                 context[cnxt] = json[cnxt];
             }
@@ -45,10 +42,10 @@ function readFile(filepath, encoding) {
  * @return
  *   [filepath, filepath...]
  */
-function getWidgets(filepath, root) {
-    var file = path.join(root, filepath),
+function getWidgets(filepath, opt) {
+    var file = path.join(opt.root, filepath),
         result = [],
-        content = readFile(file, root.encoding),
+        content = readFile(file, opt.encoding),
         ast = Parser.parse(content);
 
     if(!ast.body) {
@@ -60,11 +57,11 @@ function getWidgets(filepath, root) {
             return;
         }
         value = p.argument.value;
-        if(result.includes(value)) {
+        if(result.indexOf(value) >= 0) {
             return;
         }
         result.push(value);
-        result = result.concat(getWidgets(value, root));
+        result = result.concat(getWidgets(value, opt));
     });
 
     return result;
@@ -75,28 +72,53 @@ function getWidgets(filepath, root) {
  *   replaceExt('/widget/a/a.html', 'json') => '/widget/a/a.json'
  */
 function replaceExt(pathname, ext) {
-    return pathname.substring(0, pathname.lastIndexOf('.') - 1) + ext;
+    return pathname.substring(0, pathname.lastIndexOf('.') + 1) + ext;
 }
 
-function renderTpl(content, file, settings) {
-    var context, renderResult;
-    //clone opt, because velocity may modify opt
-    var opt = {};
-    for (var p in settings) {
-        if (settings.hasOwnProperty(p)) {
-            opt[p] = settings[p];
+/**
+ * 添加静态资源依赖
+ */
+function addStatics(widgets, content, opt) {
+    var arrCss = [], arrJs = [],
+        root = util.isArray(opt.root) ? opt.root[0] : opt.root;
+    
+    widgets.forEach(function(widget) {
+        var scssFile = replaceExt(widget, 'scss'),
+            cssFile = replaceExt(widget, 'css'),
+            jsFile = replaceExt(widget, 'js');
+            
+        if(fs.existsSync(path.join(root, scssFile))) {
+            arrCss.push('<link rel="stylesheet" href="' + scssFile + '">\n');
         }
-    }
+        if(fs.existsSync(path.join(root, cssFile))) {
+            arrCss.push('<link rel="stylesheet" href="' + cssFile + '">\n');
+        }
+        if(fs.existsSync(path.join(root, jsFile))) {
+            arrJs.push('<script src="' + jsFile + '"></script>\n');
+        }
+    });
+    
+    content = content.replace(/(<\/head>)/i, arrCss.join('') + '$1');
+    content = content.replace(/(<\/body>)/i, arrJs.join('') + '$1');
+    
+    return content;
+}
 
+/** 
+ * 对文件内容进行渲染
+ */
+function renderTpl(content, file, opt) {
+    var widgets, context, renderResult;
+    
     if (content === '') {
         return content;
     }
-
-    opt.filePath = file.path;
-    opt.template = content;
-
-    context = getContext(content);
+    
+    widgets = getWidgets(file.subpath, opt);
+    context = getContext(widgets, opt);
     renderResult = new Engine(opt).render(context);
+    
+    renderResult = addStatics(widgets, renderResult, opt);
 
     return renderResult;
 }
@@ -108,24 +130,22 @@ function renderTpl(content, file, settings) {
  *  settings: fis plugin config
  *  e.g.
  *  {
- *   root: 'widget/',
  *   encoding: 'utf-8'
  *  }
  * @return => parsed html content
  */
 module.exports = function(content, file, settings) {
-    var widgets = [];
     //clone opt, because velocity may modify opt
-    var opt = {};
+    var opt = {
+        encoding: 'utf-8'
+    };
     for (var p in settings) {
         if (settings.hasOwnProperty(p)) {
             opt[p] = settings[p];
         }
     }
     opt.root = file.realpath.replace(file.subpath, '');
+    opt.template = content;
 
-    widgets = getWidgets(file.subpath, opt.encoding);
-    console.log(widgets);
-
-    //return renderTpl(content, file, settings);
+    return renderTpl(content, file, opt);
 };
