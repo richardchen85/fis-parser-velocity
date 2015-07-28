@@ -1,6 +1,6 @@
 {
   "name": "fis-parser-velocity",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A parser for fis to compile velocity template",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "url": "https://github.com/richard-chen-1985/fis-parser-velocity/issues"
   },
   "homepage": "https://github.com/richard-chen-1985/fis-parser-velocity",
-  "devDependencies": {
+  "dependencies": {
     "velocity": "^0.7.2"
   }
 }
