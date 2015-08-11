@@ -84,16 +84,20 @@ function addStatics(widgets, content, opt) {
     
     widgets.forEach(function(widget) {
         var scssFile = replaceExt(widget, 'scss'),
+            lessFile = replaceExt(widget, 'less'),
             cssFile = replaceExt(widget, 'css'),
             jsFile = replaceExt(widget, 'js');
             
         if(fs.existsSync(path.join(root, scssFile))) {
             arrCss.push('<link rel="stylesheet" href="' + scssFile + '">\n');
         }
+        if(fs.existsSync(path.join(root, lessFile))) {
+            arrCss.push('<link rel="stylesheet" href="' + lessFile + '">\n')
+        }
         if(fs.existsSync(path.join(root, cssFile))) {
             arrCss.push('<link rel="stylesheet" href="' + cssFile + '">\n');
         }
-        if(fs.existsSync(path.join(root, jsFile))) {
+        if(opt.loadJs && fs.existsSync(path.join(root, jsFile))) {
             arrJs.push('<script src="' + jsFile + '"></script>\n');
         }
     });
@@ -130,7 +134,8 @@ function renderTpl(content, file, opt) {
  *  settings: fis plugin config
  *  e.g.
  *  {
- *   encoding: 'utf-8'
+ *   encoding: 'utf-8',
+ *   loadJs: true
  *  }
  * @return => parsed html content
  */

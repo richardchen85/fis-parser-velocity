@@ -18,7 +18,10 @@ widget
 ```js
 fis.match('*.html', {
 	parser: fis.plugin('velocity', {
-		encoding: 'utf-8'
+		encoding: 'utf-8',
+		// 是否加载js
+		// 在使用模块化框架（requirejs/seajs/modjs等）时不需要自动引入js文件
+		loadJs: true
 	});
 });
 ```
