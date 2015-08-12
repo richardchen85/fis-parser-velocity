@@ -79,7 +79,7 @@ function replaceExt(pathname, ext) {
  * 添加静态资源依赖
  */
 function addStatics(widgets, content, opt) {
-    var arrCss = [], arrJs = [],
+    var arrCss = [], arrJs = [], strJs, loader = opt.loader || null,
         root = util.isArray(opt.root) ? opt.root[0] : opt.root;
     
     widgets.forEach(function(widget) {
@@ -97,13 +97,29 @@ function addStatics(widgets, content, opt) {
         if(fs.existsSync(path.join(root, cssFile))) {
             arrCss.push('<link rel="stylesheet" href="' + cssFile + '">\n');
         }
-        if(opt.loadJs && fs.existsSync(path.join(root, jsFile))) {
-            arrJs.push('<script src="' + jsFile + '"></script>\n');
+        if(fs.existsSync(path.join(root, jsFile))) {
+            if(loader) {
+                arrJs.push(jsFile);
+            } else {
+                arrJs.push('<script src="' + jsFile + '"></script>\n');
+            }
         }
     });
-    
+    if(!loader) {
+        strJs = arrJs.join('');
+    } else {
+        switch(loader) {
+            case 'amd':
+                loader = 'require';
+            break;
+            case 'seajs':
+                loader = 'seajs.use';
+            break;
+        }
+        strJs = '<script>' + loader + '(["' + arrJs.join('","') + '"]);</script>'
+    }
     content = content.replace(/(<\/head>)/i, arrCss.join('') + '$1');
-    content = content.replace(/(<\/body>)/i, arrJs.join('') + '$1');
+    content = content.replace(/(<\/body>)/i, strJs + '$1');
     
     return content;
 }
