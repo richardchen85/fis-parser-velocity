@@ -7,7 +7,7 @@ var Engine = require('velocity').Engine,
 /**
  * 通过内容获取需要的上下文，读取引入文件的同名json文件
  * @return
- *  Object{}
+ *  [Object]
  */
 function getContext(widgets, opt) {
     var context = {};
@@ -53,6 +53,7 @@ function getWidgets(filepath, opt) {
     }
     ast.body.forEach(function(p) {
         var value;
+        // 只要#parse引入的文件
         if(p.type != 'Parse') {
             return;
         }
@@ -79,7 +80,15 @@ function replaceExt(pathname, ext) {
  * 添加静态资源依赖
  */
 function addStatics(widgets, content, opt) {
-    var arrCss = [], arrJs = [], strJs, loader = opt.loader || null,
+    var 
+        // css文件数组
+        arrCss = [],
+        // js文件数组
+        arrJs = [],
+        // js拼接字符串
+        strJs,
+        // 模块化加载函数名称[require|seajs.use]
+        loader = opt.loader || null,
         root = util.isArray(opt.root) ? opt.root[0] : opt.root;
     
     widgets.forEach(function(widget) {
@@ -98,6 +107,7 @@ function addStatics(widgets, content, opt) {
             arrCss.push('<link rel="stylesheet" href="' + cssFile + '">\n');
         }
         if(fs.existsSync(path.join(root, jsFile))) {
+            // 模块化加载，只保存文件路径
             if(loader) {
                 arrJs.push(jsFile);
             } else {
@@ -105,20 +115,17 @@ function addStatics(widgets, content, opt) {
             }
         }
     });
+    // 非模块化直接拼接script标签
     if(!loader) {
         strJs = arrJs.join('');
     } else {
-        switch(loader) {
-            case 'amd':
-                loader = 'require';
-            break;
-            case 'seajs':
-                loader = 'seajs.use';
-            break;
-        }
+        // 模块化加载依赖
+        // e.g. require(["a", "b]);
         strJs = '<script>' + loader + '(["' + arrJs.join('","') + '"]);</script>'
     }
+    // css放在</head>标签之前
     content = content.replace(/(<\/head>)/i, arrCss.join('') + '$1');
+    // js放在</body>标签之前
     content = content.replace(/(<\/body>)/i, strJs + '$1');
     
     return content;
@@ -144,16 +151,17 @@ function renderTpl(content, file, opt) {
 }
 
 /** 
- * @params
+ * params:
  *  content: file content
  *  file: fis File object
  *  settings: fis plugin config
  *  e.g.
  *  {
- *   encoding: 'utf-8',
- *   loadJs: true
+ *    encoding: 'utf-8',
+ *    loader: [require|seajs.use] // 模块化加载函数
  *  }
- * @return => parsed html content
+ * @return
+ *   [String] parsed html content
  */
 module.exports = function(content, file, settings) {
     //clone opt, because velocity may modify opt

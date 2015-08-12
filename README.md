@@ -19,9 +19,10 @@ widget
 fis.match('*.html', {
 	parser: fis.plugin('velocity', {
 		encoding: 'utf-8',
-		// 是否加载js
-		// 在使用模块化框架（requirejs/seajs/modjs等）时不需要自动引入js文件
-		loadJs: true
+		// 模块化加载函数 [require|seajs.use]
+		// 为null时，每个js文件用script标签引入<script src="/widget/a/a.js"></script><script src="/widget/b/b.js"></script>
+		// 为require或者seajs.use时，会是require(["/widget/a/a.js", "/widget/b/b.js"]);
+		loader: null
 	});
 });
 ```
