@@ -147,7 +147,26 @@ function renderTpl(content, file, opt) {
     
     renderResult = addStatics(widgets, renderResult, opt);
 
+    // 添加widget依赖，用于同步更新
+    widgets.forEach(function(widget) {
+        addDeps(file, fis.file(opt.root + widget));
+    });
+
     return renderResult;
+}
+
+/*
+ * 对引入本widget的文件添加FIS依赖，当本widget模板文件修改时，自动编译
+ * @param {Object} a
+ * @param {Object} b
+ */
+function addDeps(a, b) {
+  if (a && a.cache && b) {
+    if (b.cache) {
+      a.cache.mergeDeps(b.cache);
+    }
+    a.cache.addDeps(b.realpath || b);
+  }
 }
 
 /** 
