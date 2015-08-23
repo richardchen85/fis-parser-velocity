@@ -1,9 +1,11 @@
 // 使用fis-parser-velocity直接编译html文件
-fis.match('*.html', {
+fis.match('*.vm', {
         parser: fis.plugin('velocity', {
             encoding: 'utf-8',
             loader: 'require'
-        })
+        }),
+        rExt: '.html',
+        loaderLang: 'html'
     })
     // 加添scss编译
     .match('*.scss', {

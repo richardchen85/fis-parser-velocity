@@ -6,25 +6,27 @@ A parser for fis to compile velocity template（基于fis的velocity模板解释
 <code>
 widget
  ├ header
- | ├ header.tpl
+ | ├ header.vm
  | ├ header.js
  | ├ header.json
  | └ header.css
 </code>
 </pre>
-使用`#parse('widget/header/header.tpl')`指令引入`header`组件，插件会自动将`header.js`和`header.scss`插入html文档中，并将`header.json`文件的内容作为解析`header`组件的数据源。
+使用`#parse('widget/header/header.vm')`指令引入`header`组件，插件会自动将`header.js`和`header.scss`插入html文档中，并将`header.json`文件的内容作为解析`header`组件的数据源。
 
-.tpl文件修改后，页面会自动重新编译，如果开启了livereload，可以自动刷新预览最新修改。
+.vm或.json文件修改后，页面会自动重新编译，如果开启了livereload，可以自动刷新预览最新修改。
 
 ## 使用方法
 ```js
-fis.match('*.html', {
+fis.match('*.vm', {
 	parser: fis.plugin('velocity', {
-		encoding: 'utf-8',
 		// 模块化加载函数 [require|seajs.use]
 		// 为null时，每个js文件用script标签引入<script src="/widget/a/a.js"></script><script src="/widget/b/b.js"></script>
-		// 为require或者seajs.use时，会是require(["/widget/a/a.js", "/widget/b/b.js"]);
+		// 为require时，会是require(["/widget/a/a.js", "/widget/b/b.js"]);
+		// 为seajs.use时，会是seajs.use(["/widget/a/a.js", "/widget/b/b.js"]);
 		loader: null
-	});
+	}),
+	rExt: '.html',
+	loaderLang: 'html'
 });
 ```
