@@ -71,9 +71,10 @@ function addStatics(widgets, content, opt) {
         // js文件数组
         arrJs = [],
         // js拼接字符串
-        strJs,
+        strJs = '',
         // 模块化加载函数名称[require|seajs.use]
         loader = opt.loader || null,
+        loadJs = opt.loadJs,
         root = util.isArray(opt.root) ? opt.root[0] : opt.root;
     
     widgets.forEach(function(widget) {
@@ -91,7 +92,7 @@ function addStatics(widgets, content, opt) {
         if(util.exists(path.join(root, cssFile))) {
             arrCss.push('<link rel="stylesheet" href="' + cssFile + '">\n');
         }
-        if(util.exists(path.join(root, jsFile))) {
+        if(loadJs && util.exists(path.join(root, jsFile))) {
             // 模块化加载，只保存文件路径
             if(loader) {
                 arrJs.push(jsFile);
@@ -100,14 +101,18 @@ function addStatics(widgets, content, opt) {
             }
         }
     });
-    // 非模块化直接拼接script标签
-    if(!loader) {
-        strJs = arrJs.join('');
-    } else {
-        // 模块化加载依赖
-        // e.g. require(["a", "b]);
-        strJs = '<script>' + loader + '(["' + arrJs.join('","') + '"]);</script>'
+    
+    if(arrJs.length > 0) {
+        // 非模块化直接拼接script标签
+        if(!loader) {
+            strJs = arrJs.join('');
+        } else {
+            // 模块化加载依赖
+            // e.g. require(["a", "b]);
+            strJs = '<script>' + loader + '(["' + arrJs.join('","') + '"]);</script>';
+        }
     }
+    
     // css放在</head>标签之前
     content = content.replace(/(<\/head>)/i, arrCss.join('') + '$1');
     // js放在</body>标签之前
@@ -164,6 +169,7 @@ function addDeps(a, b) {
  *  settings: fis plugin config
  *  e.g.
  *  {
+ *    loadJs: true,
  *    loader: [require|seajs.use] // 模块化加载函数
  *  }
  * @return
@@ -171,7 +177,9 @@ function addDeps(a, b) {
  */
 module.exports = function(content, file, settings) {
     //clone opt, because velocity may modify opt
-    var opt = {};
+    var opt = {
+        loadJs: true
+    };
     util.merge(opt, settings);
     opt.root = file.realpath.replace(file.subpath, '');
     opt.template = content;

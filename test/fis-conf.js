@@ -1,7 +1,7 @@
 // 使用fis-parser-velocity直接编译html文件
 fis.match('*.vm', {
         parser: fis.plugin('velocity', {
-            encoding: 'utf-8',
+            loadJs: true,
             loader: 'require'
         }),
         rExt: '.html',

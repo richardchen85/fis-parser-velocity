@@ -20,6 +20,8 @@ widget
 ```js
 fis.match('*.vm', {
 	parser: fis.plugin('velocity', {
+		// 是否引入js
+		loadJs: true,
 		// 模块化加载函数 [require|seajs.use]
 		// 为null时，每个js文件用script标签引入<script src="/widget/a/a.js"></script><script src="/widget/b/b.js"></script>
 		// 为require时，会是require(["/widget/a/a.js", "/widget/b/b.js"]);
