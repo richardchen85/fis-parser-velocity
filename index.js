@@ -170,7 +170,8 @@ function addDeps(a, b) {
  *  e.g.
  *  {
  *    loadJs: true,
- *    loader: [require|seajs.use] // 模块化加载函数
+ *    loader: [require|seajs.use], // 模块化加载函数
+ *    macro: '/macro.vm'
  *  }
  * @return
  *   [String] parsed html content
@@ -182,6 +183,7 @@ module.exports = function(content, file, settings) {
     };
     util.merge(opt, settings);
     opt.root = file.realpath.replace(file.subpath, '');
+    opt.macro = opt.macro ? path.join(opt.root, opt.macro) : null;
     opt.template = content;
 
     return renderTpl(content, file, opt);
