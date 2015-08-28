@@ -26,7 +26,9 @@ fis.match('*.vm', {
 		// 为null时，每个js文件用script标签引入<script src="/widget/a/a.js"></script><script src="/widget/b/b.js"></script>
 		// 为require时，会是require(["/widget/a/a.js", "/widget/b/b.js"]);
 		// 为seajs.use时，会是seajs.use(["/widget/a/a.js", "/widget/b/b.js"]);
-		loader: null
+		loader: null,
+		// 全局macro文件
+		macro: '/macro.vm'
 	}),
 	rExt: '.html',
 	loaderLang: 'html'

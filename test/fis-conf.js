@@ -3,7 +3,8 @@ fis.match('*.vm', {
         parser: function(file, content) {
             return require('../index.js')(file, content, {
                 loadJs: true,
-                loader: null
+                loader: null,
+                macro: '/macro.vm'
             });
         },
         rExt: '.html',

@@ -14,6 +14,8 @@
         <h2>this is body</h2>
     </section>
     
+    #commonMacro(1, 2, 3)
+    
     #parse('/widget/footer/footer.vm')
     
 <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
