@@ -1,11 +1,16 @@
 // 使用fis-parser-velocity直接编译html文件
 fis.match('*.vm', {
-        parser: fis.plugin('velocity', {
-            loadJs: true,
-            loader: 'require'
-        }),
+        parser: function(file, content) {
+            return require('../index.js')(file, content, {
+                loadJs: true,
+                loader: null
+            });
+        },
         rExt: '.html',
         loaderLang: 'html'
+    })
+    .match('/widget/**.vm', {
+        release: false
     })
     // 加添scss编译
     .match('*.scss', {
