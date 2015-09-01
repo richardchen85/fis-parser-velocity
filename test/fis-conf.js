@@ -1,14 +1,29 @@
+var root = fis.project.getProjectPath()
+var mod = false
+
+if(mod) {
+    fis.hook('amd', {
+        baseUrl: '/'
+    })
+    fis.match('::package', {
+        postpackager: fis.plugin('loader', {
+            useInlineMap: true
+        })
+    })
+}
+
 // 使用fis-parser-velocity直接编译html文件
-fis.match('*.vm', {
+fis
+    .match('*.vm', {
         parser: fis.plugin('velocity', {
             loadJs: true,
-            loader: 'require',
-            macro: '/macro.vm'
+            loader: mod ? 'require' : null,
+            macro: '/page/macro.vm'
         }),
         rExt: '.html',
         loaderLang: 'html'
     })
-    .match('macro.vm', {
+    .match('{/page/macro,/widget/**}.{vm,json}', {
         release: false
     })
     // 加添scss编译
@@ -16,3 +31,7 @@ fis.match('*.vm', {
         rExt: '.css',
         parser: fis.plugin('sass')
     })
+    .match('/widget/**.js', {
+        isMod: true
+    })
+

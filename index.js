@@ -12,7 +12,8 @@ function getContext(widgets, opt) {
     var context = {};
 
     widgets.forEach(function(widget) {
-        var file = path.join(opt.root, replaceExt(widget, 'json'));
+        var root = util.isArray(opt.root) ? opt.root[0] : opt.root,
+            file = path.join(root, replaceExt(widget, 'json'));
         if(util.exists(file)) {
             var json = util.readJSON(file);
             util.merge(context, json);
@@ -28,7 +29,8 @@ function getContext(widgets, opt) {
  *   [filepath, filepath...]
  */
 function getWidgets(filepath, opt) {
-    var file = path.join(opt.root, filepath),
+    var root = util.isArray(opt.root) ? opt.root[0] : opt.root,
+        file = path.join(root, filepath),
         result = [],
         content = util.read(file),
         ast = Parser.parse(content);
@@ -78,7 +80,8 @@ function addStatics(widgets, content, opt) {
         root = util.isArray(opt.root) ? opt.root[0] : opt.root;
     
     widgets.forEach(function(widget) {
-        var scssFile = replaceExt(widget, 'scss'),
+        var widget = widget[0] === '/' ? widget : '/' + widget,
+            scssFile = replaceExt(widget, 'scss'),
             lessFile = replaceExt(widget, 'less'),
             cssFile = replaceExt(widget, 'css'),
             jsFile = replaceExt(widget, 'js');
@@ -125,7 +128,8 @@ function addStatics(widgets, content, opt) {
  * 对文件内容进行渲染
  */
 function renderTpl(content, file, opt) {
-    var widgets, context, renderResult;
+    var widgets, context, renderResult,
+        root = util.isArray(opt.root) ? opt.root[0] : opt.root;
     
     if (content === '') {
         return content;
@@ -139,8 +143,8 @@ function renderTpl(content, file, opt) {
 
     // 添加widget依赖，用于同步更新
     widgets.forEach(function(widget) {
-        var tpl = opt.root + widget;
-        var json = opt.root + replaceExt(widget, 'json');
+        var tpl = path.join(root, widget);
+        var json = path.join(root, replaceExt(widget, 'json'));
         addDeps(file, tpl);
         fis.util.exists(json) && addDeps(file, json);
     });
@@ -154,35 +158,47 @@ function renderTpl(content, file, opt) {
  * @param {Object} b
  */
 function addDeps(a, b) {
-  if (a && a.cache && b) {
-    if (b.cache) {
-      a.cache.mergeDeps(b.cache);
+    if (a && a.cache && b) {
+        if (b.cache) {
+            a.cache.mergeDeps(b.cache);
+        }
+        a.cache.addDeps(b.realpath || b);
     }
-    a.cache.addDeps(b.realpath || b);
-  }
 }
 
-/** 
- * params:
- *  content: file content
- *  file: fis File object
- *  settings: fis plugin config
- *  e.g.
- *  {
- *    loadJs: true,
- *    loader: [require|seajs.use], // 模块化加载函数
- *    macro: '/macro.vm'
- *  }
- * @return
- *   [String] parsed html content
+/**
+ * fis-parser-velocity
+ * @example
+ * fis.match('*.vm', {
+ *   parser: fis.plugin('velocity', {
+ *     // 是否引入js
+ *     loadJs: true,
+ *     // 模块化加载函数 [require|seajs.use]
+ *     // 为null时，每个js文件用script标签引入<script src="/widget/a/a.js"></script><script src="/widget/b/b.js"></script>
+ *     // 为require时，会是require(["/widget/a/a.js", "/widget/b/b.js"]);
+ *     // 为seajs.use时，会是seajs.use(["/widget/a/a.js", "/widget/b/b.js"]);
+ *     loader: null,
+ *     // 全局macro文件，相对于root
+ *     macro: '/macro.vm',
+ *     // velocity的root配置，默认为项目根目录
+ *     root: fis.project.getProjectPath() + '/'
+ *	 }),
+ *   rExt: '.html',
+ * });
+ * @param content
+ * @param file
+ * @param settings
+ * @returns {String} 编译后的html内容
  */
 module.exports = function(content, file, settings) {
     //clone opt, because velocity may modify opt
     var opt = {
-        loadJs: true
+        loadJs: true,
+        loader: null,
+        macro: null,
+        root: fis.project.getProjectPath() + '/'
     };
     util.merge(opt, settings);
-    opt.root = file.realpath.replace(file.subpath, '');
     opt.macro = opt.macro ? path.join(opt.root, opt.macro) : null;
     opt.template = content;
 

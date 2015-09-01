@@ -19,18 +19,20 @@ widget
 ## 使用方法
 ```js
 fis.match('*.vm', {
-	parser: fis.plugin('velocity', {
-		// 是否引入js
-		loadJs: true,
-		// 模块化加载函数 [require|seajs.use]
-		// 为null时，每个js文件用script标签引入<script src="/widget/a/a.js"></script><script src="/widget/b/b.js"></script>
-		// 为require时，会是require(["/widget/a/a.js", "/widget/b/b.js"]);
-		// 为seajs.use时，会是seajs.use(["/widget/a/a.js", "/widget/b/b.js"]);
-		loader: null,
-		// 全局macro文件
-		macro: '/macro.vm'
-	}),
-	rExt: '.html',
-	loaderLang: 'html'
+  parser: fis.plugin('velocity', {
+    // 是否引入js
+    loadJs: true,
+    // 模块化加载函数 [require|seajs.use]
+    // 为null时，每个js文件用script标签引入<script src="/widget/a/a.js"></script><script src="/widget/b/b.js"></script>
+    // 为require时，会是require(["/widget/a/a.js", "/widget/b/b.js"]);
+    // 为seajs.use时，会是seajs.use(["/widget/a/a.js", "/widget/b/b.js"]);
+    loader: null,
+    // 全局macro文件，相对于root
+    macro: '/page/macro.vm',
+    // velocity的root配置，默认为项目根目录
+    root: fis.project.getProjectPath() + '/'
+  }),
+  rExt: '.html',
+  loaderLang: 'html'
 });
 ```

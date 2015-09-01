@@ -5,18 +5,19 @@
     <title>Examples</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
-    <link href="" rel="stylesheet">
 </head>
 <body>
-    #parse('/widget/header/header.vm')
+    #parse('widget/header/header.vm')
     
     <section>
         <h2>this is body</h2>
     </section>
     
     #commonMacro(1, 2, 3)
+
+    #parse('page/list.vm')
     
-    #parse('/widget/footer/footer.vm')
+    #parse('widget/footer/footer.vm')
     
 <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
 </body>
