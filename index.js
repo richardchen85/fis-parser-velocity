@@ -10,10 +10,13 @@ var Engine = require('velocity').Engine,
  */
 function getContext(widgets, opt) {
     var context = {};
-
+    
+    widgets = util.isArray(widgets) ? widgets : [widgets];
     widgets.forEach(function(widget) {
         var root = util.isArray(opt.root) ? opt.root[0] : opt.root,
             file = path.join(root, replaceExt(widget, 'json'));
+            
+        file = util.isAbsolute(file) ? file : path.join(root, file);
         if(util.exists(file)) {
             var json = util.readJSON(file);
             util.merge(context, json);
@@ -136,7 +139,8 @@ function renderTpl(content, file, opt) {
     }
     
     widgets = getWidgets(file.subpath, opt);
-    context = getContext(widgets, opt);
+    context = getContext(file.subpath, opt);
+    util.merge(context, getContext(widgets, opt));
     renderResult = new Engine(opt).render(context);
     
     renderResult = addStatics(widgets, renderResult, opt);

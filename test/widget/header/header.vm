@@ -1,1 +1,8 @@
-<header>$header</header>
+<header>
+	<div class="slogan">$header</div>
+	#if($login)
+	<div class="userinfo">登录信息</div>
+	#else
+	<div class="loginlink"><a href="">登录</a></div>
+	#end
+</header>

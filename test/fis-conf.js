@@ -14,12 +14,14 @@ if(mod) {
 
 // 使用fis-parser-velocity直接编译html文件
 fis
-    .match('*.vm', {
-        parser: fis.plugin('velocity', {
-            loadJs: true,
-            loader: mod ? 'require' : null,
-            macro: '/page/macro.vm'
-        }),
+    match('*.vm', {
+        parser: function(file, content) {
+            return require('../index.js')(file, content, {
+                loadJs: true,
+                loader: null,
+                macro: '/macro.vm'
+            });
+        },
         rExt: '.html',
         loaderLang: 'html'
     })
