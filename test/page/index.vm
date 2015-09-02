@@ -18,5 +18,8 @@
     #parse('widget/footer/footer.vm')
     
 <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+
+    <!--WIDGET_JS_HOLDER-->
+
 </body>
 </html>

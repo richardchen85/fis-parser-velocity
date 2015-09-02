@@ -93,7 +93,9 @@ function addStatics(widgets, content, opt) {
         // 模块化加载函数名称[require|seajs.use]
         loader = opt.loader || null,
         loadJs = opt.loadJs,
-        root = opt.root;
+        root = opt.root,
+        rCssHolder = /<!--\s?WIDGET_CSS_HOLDER\s?-->/,
+        rJsHolder = /<!--WIDGET_JS_HOLDER-->/;
     
     widgets.forEach(function(widget) {
         var widget = widget[0] === '/' ? widget : '/' + widget,
@@ -131,12 +133,21 @@ function addStatics(widgets, content, opt) {
             strJs = '<script>' + loader + '(["' + arrJs.join('","') + '"]);</script>\n';
         }
     }
-    
-    // css放在</head>标签之前
-    content = content.replace(/(<\/head>)/i, arrCss.join('') + '$1');
-    // js放在</body>标签之前
-    content = content.replace(/(<\/body>)/i, strJs + '$1');
-    
+
+    if(rCssHolder.test(content)) {
+        content = content.replace(rCssHolder, arrCss.join(''));
+    } else {
+        // css放在</head>标签之前
+        content = content.replace(/(<\/head>)/i, arrCss.join('') + '$1');
+    }
+
+    if(rJsHolder.test(content)) {
+        content = content.replace(rJsHolder, strJs);
+    } else {
+        // js放在</body>标签之前
+        content = content.replace(/(<\/body>)/i, strJs + '$1');
+    }
+
     return content;
 }
 
