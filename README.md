@@ -30,7 +30,7 @@ fis.match('*.vm', {
     // 全局macro文件，相对于root
     macro: '/page/macro.vm',
     // velocity的root配置，默认为项目根目录
-    root: fis.project.getProjectPath() + '/'
+    root: [fis.project.getProjectPath()]
   }),
   rExt: '.html',
   loaderLang: 'html'

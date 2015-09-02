@@ -8,18 +8,14 @@ var Engine = require('velocity').Engine,
  * @return
  *  [Object]
  */
-function getContext(widgets, opt) {
+function getContext(widgets, root) {
     var context = {};
     
     widgets = util.isArray(widgets) ? widgets : [widgets];
     widgets.forEach(function(widget) {
-        var root = util.isArray(opt.root) ? opt.root[0] : opt.root,
-            file = path.join(root, replaceExt(widget, 'json'));
-            
-        file = util.isAbsolute(file) ? file : path.join(root, file);
-        if(util.exists(file)) {
-            var json = util.readJSON(file);
-            util.merge(context, json);
+        var file = getAbsolutePath(replaceExt(widget, 'json'), root);
+        if(file) {
+            util.merge(context, util.readJSON(file));
         }
     });
 
@@ -32,10 +28,9 @@ function getContext(widgets, opt) {
  *   [filepath, filepath...]
  */
 function getWidgets(filepath, opt) {
-    var root = util.isArray(opt.root) ? opt.root[0] : opt.root,
-        file = path.join(root, filepath),
+    var file = getAbsolutePath(filepath, opt.root),
         result = [],
-        content = util.read(file),
+        content = file ? util.read(file) : '',
         ast = Parser.parse(content);
 
     if(!ast.body) {
@@ -48,6 +43,7 @@ function getWidgets(filepath, opt) {
             return;
         }
         value = p.argument.value;
+        // 过滤重复引用
         if(result.indexOf(value) >= 0) {
             return;
         }
@@ -59,11 +55,28 @@ function getWidgets(filepath, opt) {
 }
 
 /** 替换文件的扩展名
- * e.g.
- *   replaceExt('/widget/a/a.html', 'json') => '/widget/a/a.json'
+ * @example
+ * replaceExt('/widget/a/a.html', 'json') => '/widget/a/a.json'
  */
 function replaceExt(pathname, ext) {
     return pathname.substring(0, pathname.lastIndexOf('.') + 1) + ext;
+}
+
+/**
+ * 返回文件绝对路径，因为root为数组，所以每个root都得判断一下
+ * @param file {String} 文件相对路径
+ * @param root {Array} root目录数组
+ * @return {String} 返回文件绝对路径或者null
+ */
+function getAbsolutePath(file, root) {
+    var result = null;
+    for(var i = 0; i < root.length; i++) {
+        if(util.exists(path.join(root[i], file))) {
+            result = path.join(root[i], file);
+            break;
+        }
+    }
+    return result;
 }
 
 /**
@@ -79,8 +92,7 @@ function addStatics(widgets, content, opt) {
         strJs = '',
         // 模块化加载函数名称[require|seajs.use]
         loader = opt.loader || null,
-        loadJs = opt.loadJs,
-        root = util.isArray(opt.root) ? opt.root[0] : opt.root;
+        loadJs = opt.loadJs;
     
     widgets.forEach(function(widget) {
         var widget = widget[0] === '/' ? widget : '/' + widget,
@@ -89,16 +101,16 @@ function addStatics(widgets, content, opt) {
             cssFile = replaceExt(widget, 'css'),
             jsFile = replaceExt(widget, 'js');
             
-        if(util.exists(path.join(root, scssFile))) {
+        if(getAbsolutePath(scssFile, root)) {
             arrCss.push('<link rel="stylesheet" href="' + scssFile + '">\n');
         }
-        if(util.exists(path.join(root, lessFile))) {
+        if(getAbsolutePath(lessFile, root)) {
             arrCss.push('<link rel="stylesheet" href="' + lessFile + '">\n')
         }
-        if(util.exists(path.join(root, cssFile))) {
+        if(getAbsolutePath(cssFile, root)) {
             arrCss.push('<link rel="stylesheet" href="' + cssFile + '">\n');
         }
-        if(loadJs && util.exists(path.join(root, jsFile))) {
+        if(loadJs && getAbsolutePath(jsFile, root)) {
             // 模块化加载，只保存文件路径
             if(loader) {
                 arrJs.push(jsFile);
@@ -115,7 +127,7 @@ function addStatics(widgets, content, opt) {
         } else {
             // 模块化加载依赖
             // e.g. require(["a", "b]);
-            strJs = '<script>' + loader + '(["' + arrJs.join('","') + '"]);</script>';
+            strJs = '<script>' + loader + '(["' + arrJs.join('","') + '"]);</script>\n';
         }
     }
     
@@ -131,26 +143,33 @@ function addStatics(widgets, content, opt) {
  * 对文件内容进行渲染
  */
 function renderTpl(content, file, opt) {
-    var widgets, context, renderResult,
-        root = util.isArray(opt.root) ? opt.root[0] : opt.root;
+    var widgets, context, renderResult, root = opt.root;
     
     if (content === '') {
         return content;
     }
     
+    // 通过ast树获取#parse引入的文件
     widgets = getWidgets(file.subpath, opt);
-    context = getContext(file.subpath, opt);
-    util.merge(context, getContext(widgets, opt));
+
+    // 将页面文件同名json文件加入context
+    context = getContext(file.subpath, root);
+
+    // 将widgets的json文件加入context
+    util.merge(context, getContext(widgets, root));
+
+    // 得到解析后的文件内容
     renderResult = new Engine(opt).render(context);
-    
+
+    // 添加widgets的js和css依赖到输入内容
     renderResult = addStatics(widgets, renderResult, opt);
 
-    // 添加widget依赖，用于同步更新
+    // 添加widget依赖到fis缓存，用于同步更新
     widgets.forEach(function(widget) {
-        var tpl = path.join(root, widget);
-        var json = path.join(root, replaceExt(widget, 'json'));
-        addDeps(file, tpl);
-        fis.util.exists(json) && addDeps(file, json);
+        var tpl = getAbsolutePath(widget, root);
+        var json = getAbsolutePath(replaceExt(widget, 'json'), root);
+        tpl && addDeps(file, tpl);
+        json && addDeps(file, json);
     });
 
     return renderResult;
@@ -183,9 +202,9 @@ function addDeps(a, b) {
  *     // 为seajs.use时，会是seajs.use(["/widget/a/a.js", "/widget/b/b.js"]);
  *     loader: null,
  *     // 全局macro文件，相对于root
- *     macro: '/macro.vm',
+ *     macro: '/page/macro.vm',
  *     // velocity的root配置，默认为项目根目录
- *     root: fis.project.getProjectPath() + '/'
+ *     root: [fis.project.getProjectPath()]
  *	 }),
  *   rExt: '.html',
  * });
@@ -195,16 +214,16 @@ function addDeps(a, b) {
  * @returns {String} 编译后的html内容
  */
 module.exports = function(content, file, settings) {
+    var root = fis.project.getProjectPath();
     //clone opt, because velocity may modify opt
     var opt = {
         loadJs: true,
         loader: null,
         macro: null,
-        root: fis.project.getProjectPath() + '/'
+        root: [root]
     };
     util.merge(opt, settings);
-    opt.macro = opt.macro ? path.join(opt.root, opt.macro) : null;
     opt.template = content;
-
+    opt.macro = getAbsolutePath(opt.macro, opt.root);
     return renderTpl(content, file, opt);
 };

@@ -8,15 +8,11 @@
 </head>
 <body>
     #parse('widget/header/header.vm')
-    
-    <section>
-        <h2>this is body</h2>
-    </section>
-    
-    #commonMacro(1, 2, 3)
-    
+
+    #parse('list/list.vm')
+
     #parse('widget/footer/footer.vm')
-    
+
 <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
 </body>
 </html>
