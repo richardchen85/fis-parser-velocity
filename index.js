@@ -92,7 +92,8 @@ function addStatics(widgets, content, opt) {
         strJs = '',
         // 模块化加载函数名称[require|seajs.use]
         loader = opt.loader || null,
-        loadJs = opt.loadJs;
+        loadJs = opt.loadJs,
+        root = opt.root;
     
     widgets.forEach(function(widget) {
         var widget = widget[0] === '/' ? widget : '/' + widget,
