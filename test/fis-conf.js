@@ -1,5 +1,12 @@
 var root = fis.project.getProjectPath()
+var util = fis.util
 var mod = false
+var vmConf = {
+    loadJs: true,
+    loader: null,
+    macro: '/macro.vm',
+    root: [root, root + '/page']
+}
 
 if(mod) {
     fis.hook('amd', {
@@ -16,12 +23,7 @@ if(mod) {
 fis
     .match('*.vm', {
         parser: function(file, content) {
-            return require('../index.js')(file, content, {
-                loadJs: true,
-                loader: null,
-                macro: '/macro.vm',
-                root: [root, root + '/page']
-            });
+            return require('../index.js')(file, content, vmConf);
         },
         rExt: '.html',
         loaderLang: 'html'
@@ -38,3 +40,22 @@ fis
         isMod: true
     })
 
+// 只发布VM文件
+var tmpVelocity = util.merge({parse: false}, vmConf);
+fis
+    .media('tmpl')
+    .match('*.vm', {
+        parser: function(file, content) {
+            return require('../index.js')(file, content, tmpVelocity);
+        },
+        rExt: '.vm',
+        deploy: fis.plugin('local-deliver', {
+            to: './output/template'
+        })
+    })
+    .match('/page/(**.vm)', {
+        release: '$1'
+    })
+    .match('/widget/**.vm', {
+        release: '$0'
+    })

@@ -95,7 +95,7 @@ function addStatics(widgets, content, opt) {
         loadJs = opt.loadJs,
         root = opt.root,
         rCssHolder = /<!--\s?WIDGET_CSS_HOLDER\s?-->/,
-        rJsHolder = /<!--WIDGET_JS_HOLDER-->/;
+        rJsHolder = /<!--\s?WIDGET_JS_HOLDER\s?-->/;
     
     widgets.forEach(function(widget) {
         var widget = widget[0] === '/' ? widget : '/' + widget,
@@ -155,7 +155,10 @@ function addStatics(widgets, content, opt) {
  * 对文件内容进行渲染
  */
 function renderTpl(content, file, opt) {
-    var widgets, context, renderResult, root = opt.root;
+    var widgets,
+        context,
+        root = opt.root,
+        parse = opt.parse;
     
     if (content === '') {
         return content;
@@ -171,10 +174,10 @@ function renderTpl(content, file, opt) {
     util.merge(context, getContext(widgets, root));
 
     // 得到解析后的文件内容
-    renderResult = new Engine(opt).render(context);
+    content = parse ? new Engine(opt).render(context) : content;
 
     // 添加widgets的js和css依赖到输入内容
-    renderResult = addStatics(widgets, renderResult, opt);
+    content = addStatics(widgets, content, opt);
 
     // 添加widget依赖到fis缓存，用于同步更新
     widgets.forEach(function(widget) {
@@ -184,7 +187,7 @@ function renderTpl(content, file, opt) {
         json && addDeps(file, json);
     });
 
-    return renderResult;
+    return content;
 }
 
 /*
@@ -215,6 +218,8 @@ function addDeps(a, b) {
  *     loader: null,
  *     // 全局macro文件，相对于root
  *     macro: '/page/macro.vm',
+ *     // 是否编译内容，默认为true，为false时不编译velocity语法，只引用资源依赖
+ *     parse: true,
  *     // velocity的root配置，默认为项目根目录
  *     root: [fis.project.getProjectPath()]
  *	 }),
@@ -232,6 +237,7 @@ module.exports = function(content, file, settings) {
         loadJs: true,
         loader: null,
         macro: null,
+        parse: true,
         root: [root]
     };
     util.merge(opt, settings);

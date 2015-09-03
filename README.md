@@ -14,6 +14,8 @@ widget
 </pre>
 使用`#parse('widget/header/header.vm')`指令引入`header`组件，插件会自动将`header.js`和`header.scss`插入html文档中，并将`header.json`文件的内容作为解析`header`组件的数据源。
 
+默认组件的css和js文件会分别插入`</head>`和`</body>`标签之前，也可以自定义插入位置，css插入占位符为`<!--WIDGET_CSS_HOLDER-->`，js插入占位符为`<!--WIDGET_JS_HOLDER-->`。
+
 .vm或.json文件修改后，页面会自动重新编译，如果开启了livereload，可以自动刷新预览最新修改。
 
 ## 使用方法
@@ -23,16 +25,20 @@ fis.match('*.vm', {
     // 是否引入js
     loadJs: true,
     // 模块化加载函数 [require|seajs.use]
-    // 为null时，每个js文件用script标签引入<script src="/widget/a/a.js"></script><script src="/widget/b/b.js"></script>
-    // 为require时，会是require(["/widget/a/a.js", "/widget/b/b.js"]);
-    // 为seajs.use时，会是seajs.use(["/widget/a/a.js", "/widget/b/b.js"]);
+    // null: 用script标签引入<script src="/widget/a/a.js"></script><script src="/widget/b/b.js"></script>
+    // require: require(["/widget/a/a.js", "/widget/b/b.js"]);
+    // seajs.use: seajs.use(["/widget/a/a.js", "/widget/b/b.js"]);
     loader: null,
     // 全局macro文件，相对于root
     macro: '/page/macro.vm',
+    // 是否编译内容，默认为true，为false时不编译velocity语法，只引用资源依赖
+    parse: true,
     // velocity的root配置，默认为项目根目录
     root: [fis.project.getProjectPath()]
   }),
+  // 将扩展名发布为html
   rExt: '.html',
+  // 以html文件类型作为fis3-postpackager-loader语言分析
   loaderLang: 'html'
 });
 ```
