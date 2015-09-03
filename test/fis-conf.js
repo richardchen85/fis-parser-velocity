@@ -1,9 +1,9 @@
 var root = fis.project.getProjectPath()
 var util = fis.util
-var mod = false
+var mod = true
 var vmConf = {
     loadJs: true,
-    loader: null,
+    loader: 'require',
     macro: '/macro.vm',
     root: [root, root + '/page']
 }
@@ -14,7 +14,8 @@ if(mod) {
     })
     fis.match('::package', {
         postpackager: fis.plugin('loader', {
-            useInlineMap: true
+            useInlineMap: true,
+            allInOne: true
         })
     })
 }
