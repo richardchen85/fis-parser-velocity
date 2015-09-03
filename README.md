@@ -1,6 +1,8 @@
 # fis-parser-velocity
 A parser for fis to compile velocity template（基于fis的velocity模板解释器）
 
+从0.2.0版本开始，模拟数据文件扩展名从.json变成了.mock，主要考虑velocity tools的需求，.mock文件内容其实是一个`nodejs`模块，可以满足velocity tools调用方法，如`$util.add(1,1)`输出 `2`。
+
 ## 组件化实现方法
 <pre>
 <code>
@@ -8,15 +10,15 @@ widget
  ├ header
  | ├ header.vm
  | ├ header.js
- | ├ header.json
+ | ├ header.mock
  | └ header.css
 </code>
 </pre>
-使用`#parse('widget/header/header.vm')`指令引入`header`组件，插件会自动将`header.js`和`header.scss`插入html文档中，并将`header.json`文件的内容作为解析`header`组件的数据源。
+使用`#parse('widget/header/header.vm')`指令引入`header`组件，插件会自动将`header.js`和`header.scss`插入html文档中，并将`header.mock`文件的内容作为解析`header`组件的数据源。
 
 默认组件的css和js文件会分别插入`</head>`和`</body>`标签之前，也可以自定义插入位置，css插入占位符为`<!--WIDGET_CSS_HOLDER-->`，js插入占位符为`<!--WIDGET_JS_HOLDER-->`。
 
-.vm或.json文件修改后，页面会自动重新编译，如果开启了livereload，可以自动刷新预览最新修改。
+.vm或.mock文件修改后，页面会自动重新编译，如果开启了livereload，可以自动刷新预览最新修改。
 
 ## 使用方法
 ```js

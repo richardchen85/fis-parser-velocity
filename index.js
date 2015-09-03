@@ -4,7 +4,7 @@ var Engine = require('velocity').Engine,
     util = fis.util;
 
 /**
- * 通过内容获取需要的上下文，读取引入文件的同名json文件
+ * 通过内容获取需要的上下文，读取引入文件的同名xxx-mock.js文件
  * @return
  *  [Object]
  */
@@ -13,9 +13,10 @@ function getContext(widgets, root) {
     
     widgets = util.isArray(widgets) ? widgets : [widgets];
     widgets.forEach(function(widget) {
-        var file = getAbsolutePath(replaceExt(widget, 'json'), root);
+        var file = getAbsolutePath(replaceExt(widget, '.mock'), root);
         if(file) {
-            util.merge(context, util.readJSON(file));
+            util.merge(context, require(file));
+            delete require.cache[file];
         }
     });
 
@@ -56,10 +57,10 @@ function getWidgets(filepath, opt) {
 
 /** 替换文件的扩展名
  * @example
- * replaceExt('/widget/a/a.html', 'json') => '/widget/a/a.json'
+ * replaceExt('/widget/a/a.html', '.css') => '/widget/a/a.css'
  */
 function replaceExt(pathname, ext) {
-    return pathname.substring(0, pathname.lastIndexOf('.') + 1) + ext;
+    return pathname.substring(0, pathname.lastIndexOf('.')) + ext;
 }
 
 /**
@@ -99,10 +100,10 @@ function addStatics(widgets, content, opt) {
     
     widgets.forEach(function(widget) {
         var widget = widget[0] === '/' ? widget : '/' + widget,
-            scssFile = replaceExt(widget, 'scss'),
-            lessFile = replaceExt(widget, 'less'),
-            cssFile = replaceExt(widget, 'css'),
-            jsFile = replaceExt(widget, 'js');
+            scssFile = replaceExt(widget, '.scss'),
+            lessFile = replaceExt(widget, '.less'),
+            cssFile = replaceExt(widget, '.css'),
+            jsFile = replaceExt(widget, '.js');
             
         if(getAbsolutePath(scssFile, root)) {
             arrCss.push('<link rel="stylesheet" href="' + scssFile + '">\n');
@@ -157,6 +158,7 @@ function addStatics(widgets, content, opt) {
 function renderTpl(content, file, opt) {
     var widgets,
         context,
+        pageMock,
         root = opt.root,
         parse = opt.parse;
     
@@ -167,10 +169,14 @@ function renderTpl(content, file, opt) {
     // 通过ast树获取#parse引入的文件
     widgets = getWidgets(file.subpath, opt);
 
-    // 将页面文件同名json文件加入context
+    // 将页面文件同名xxx-mock.js文件加入context
     context = getContext(file.subpath, root);
 
-    // 将widgets的json文件加入context
+    // 将页面文件同名xxx-mock.js加入依赖缓存，用于同步更新
+    pageMock = getAbsolutePath(replaceExt(file.subpath, '.mock'), root);
+    pageMock && addDeps(file, pageMock);
+
+    // 将widgets的xxx-mock.js文件加入context
     util.merge(context, getContext(widgets, root));
 
     // 得到解析后的文件内容
@@ -182,9 +188,9 @@ function renderTpl(content, file, opt) {
     // 添加widget依赖到fis缓存，用于同步更新
     widgets.forEach(function(widget) {
         var tpl = getAbsolutePath(widget, root);
-        var json = getAbsolutePath(replaceExt(widget, 'json'), root);
+        var mock = getAbsolutePath(replaceExt(widget, '.mock'), root);
         tpl && addDeps(file, tpl);
-        json && addDeps(file, json);
+        mock && addDeps(file, mock);
     });
 
     return content;
