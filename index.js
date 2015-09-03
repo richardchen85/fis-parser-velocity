@@ -116,7 +116,7 @@ function addStatics(widgets, content, opt) {
         if(loadJs && getAbsolutePath(jsFile, root)) {
             // 模块化加载，只保存文件路径
             if(loader) {
-                arrJs.push(jsFile);
+                arrJs.push(jsFile.substring(1, jsFile.lastIndexOf('.')));
             } else {
                 arrJs.push('<script src="' + jsFile + '"></script>\n');
             }
