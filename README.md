@@ -42,3 +42,4 @@ fis.match('*.vm', {
   loaderLang: 'html'
 });
 ```
+使用模块化框架时，请参考[fis3-postpackager-loader](https://github.com/fex-team/fis3-postpackager-loader)的使用规范，对引用模块化框架的`script`标签加`data-loader`属性，即`<script data-loader src='/path/to/require.js'></script>`，这样才能正确插入`sourcemap`。

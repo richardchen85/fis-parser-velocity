@@ -14,8 +14,8 @@ if(mod) {
     })
     fis.match('::package', {
         postpackager: fis.plugin('loader', {
-            useInlineMap: true,
-            allInOne: true
+            resourceType: 'amd',
+            useInlineMap: true
         })
     })
 }
