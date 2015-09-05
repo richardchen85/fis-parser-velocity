@@ -10,7 +10,7 @@ var Engine = require('velocity').Engine,
  */
 function getContext(widgets, root) {
     var context = {};
-    
+
     widgets = util.isArray(widgets) ? widgets : [widgets];
     widgets.forEach(function(widget) {
         var file = getAbsolutePath(replaceExt(widget, '.mock'), root);
@@ -83,28 +83,29 @@ function getAbsolutePath(file, root) {
 /**
  * 添加静态资源依赖
  */
-function addStatics(widgets, content, opt) {
-    var 
+function addStatics(widgets, content, file, opt) {
+    var
         // css文件数组
         arrCss = [],
         // js文件数组
         arrJs = [],
         // js拼接字符串
         strJs = '',
-        // 模块化加载函数名称[require|seajs.use]
-        loader = opt.loader || null,
         loadJs = opt.loadJs,
+        // 模块化加载函数名称[requirejs|modjs|seajs]
+        loader = opt.loader || null,
+        loadSync = opt.loadSync,
         root = opt.root,
         rCssHolder = /<!--\s?WIDGET_CSS_HOLDER\s?-->/,
         rJsHolder = /<!--\s?WIDGET_JS_HOLDER\s?-->/;
-    
+
     widgets.forEach(function(widget) {
         var widget = widget[0] === '/' ? widget : '/' + widget,
             scssFile = replaceExt(widget, '.scss'),
             lessFile = replaceExt(widget, '.less'),
             cssFile = replaceExt(widget, '.css'),
             jsFile = replaceExt(widget, '.js');
-            
+
         if(getAbsolutePath(scssFile, root)) {
             arrCss.push('<link rel="stylesheet" href="' + scssFile + '">\n');
         }
@@ -123,15 +124,28 @@ function addStatics(widgets, content, opt) {
             }
         }
     });
-    
+
     if(arrJs.length > 0) {
         // 非模块化直接拼接script标签
         if(!loader) {
             strJs = arrJs.join('');
         } else {
-            // 模块化加载依赖
-            // e.g. require(["a", "b]);
-            strJs = '<script>' + loader + '(["' + arrJs.join('","') + '"]);</script>\n';
+            // 如果开启同步加载，需要script标签直接引入
+            if(loadSync) {
+                arrJs.forEach(function(js) {
+                    strJs += '<script src="' + js + '"></script>\n';
+                })
+            }
+            switch(loader) {
+                case 'require':
+                case 'requirejs':
+                case 'modjs':
+                    strJs += '<script>require(["' + arrJs.join('","') + '"]);</script>\n';
+                    break;
+                case 'seajs.use':
+                case 'seajs':
+                    strJs += '<script>seajs.use(["' + arrJs.join('","') + '"]);</script>\n';
+            }
         }
     }
 
@@ -152,25 +166,33 @@ function addStatics(widgets, content, opt) {
     return content;
 }
 
-/** 
+/**
  * 对文件内容进行渲染
  */
 function renderTpl(content, file, opt) {
     var widgets,
-        context,
+        context = {},
         pageMock,
+        commonMock = opt.commonMock,
         root = opt.root,
         parse = opt.parse;
-    
+
     if (content === '') {
         return content;
     }
-    
+
     // 通过ast树获取#parse引入的文件
     widgets = getWidgets(file.subpath, opt);
 
+    // 添加全局mock到context
+    if(commonMock) {
+        util.merge(context, require(commonMock));
+        delete require.cache[commonMock];
+        addDeps(file, commonMock);
+    }
+
     // 将页面文件同名xxx-mock.js文件加入context
-    context = getContext(file.subpath, root);
+    util.merge(context, getContext(file.subpath, root));
 
     // 将页面文件同名xxx-mock.js加入依赖缓存，用于同步更新
     pageMock = getAbsolutePath(replaceExt(file.subpath, '.mock'), root);
@@ -183,7 +205,7 @@ function renderTpl(content, file, opt) {
     content = parse ? new Engine(opt).render(context) : content;
 
     // 添加widgets的js和css依赖到输入内容
-    content = addStatics(widgets, content, opt);
+    content = addStatics(widgets, content, file, opt);
 
     // 添加widget依赖到fis缓存，用于同步更新
     widgets.forEach(function(widget) {
@@ -210,44 +232,22 @@ function addDeps(a, b) {
     }
 }
 
+function addRequire(file, id) {
+    file.addRequire(id);
+}
+
 /**
  * fis-parser-velocity
- * @example
- * fis.match('*.vm', {
- *   parser: fis.plugin('velocity', {
- *     // 是否引入js
- *     loadJs: true,
- *     // 模块化加载函数 [require|seajs.use]
- *     // 为null时，每个js文件用script标签引入<script src="/widget/a/a.js"></script><script src="/widget/b/b.js"></script>
- *     // 为require时，会是require(["/widget/a/a.js", "/widget/b/b.js"]);
- *     // 为seajs.use时，会是seajs.use(["/widget/a/a.js", "/widget/b/b.js"]);
- *     loader: null,
- *     // 全局macro文件，相对于root
- *     macro: '/page/macro.vm',
- *     // 是否编译内容，默认为true，为false时不编译velocity语法，只引用资源依赖
- *     parse: true,
- *     // velocity的root配置，默认为项目根目录
- *     root: [fis.project.getProjectPath()]
- *	 }),
- *   rExt: '.html',
- * });
  * @param content
  * @param file
  * @param settings
  * @returns {String} 编译后的html内容
  */
 module.exports = function(content, file, settings) {
-    var root = fis.project.getProjectPath();
-    //clone opt, because velocity may modify opt
-    var opt = {
-        loadJs: true,
-        loader: null,
-        macro: null,
-        parse: true,
-        root: [root]
-    };
+    var opt = require('./config.js');
     util.merge(opt, settings);
     opt.template = content;
     opt.macro = getAbsolutePath(opt.macro, opt.root);
+    opt.commonMock = getAbsolutePath(opt.commonMock, opt.root);
     return renderTpl(content, file, opt);
 };
