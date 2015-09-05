@@ -71,6 +71,9 @@ function replaceExt(pathname, ext) {
  */
 function getAbsolutePath(file, root) {
     var result = null;
+    if(!file || !root || !util.isArray(root)) {
+        return result;
+    }
     for(var i = 0; i < root.length; i++) {
         if(util.exists(path.join(root[i], file))) {
             result = path.join(root[i], file);
