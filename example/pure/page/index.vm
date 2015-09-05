@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Examples</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+</head>
+<body>
+    #parse('widget/header/header.vm')
+    
+    <section>
+        <h2>this is body</h2>
+    </section>
+
+    #set($addr = $user.addr())
+    <p>zipcode: $addr.zipcode</p>
+    <p>city: $addr.city</p>
+
+    <p>add: $util.add(3, 7) </p>
+    
+    <p>#commonMacro(1, 2, 3)</p>
+    
+    #parse('widget/footer/footer.vm')
+    
+<!--WIDGET_JS_HOLDER-->
+
+</body>
+</html>
