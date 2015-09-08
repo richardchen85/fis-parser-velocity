@@ -235,10 +235,6 @@ function addDeps(a, b) {
     }
 }
 
-function addRequire(file, id) {
-    file.addRequire(id);
-}
-
 /**
  * fis-parser-velocity
  * @param content
