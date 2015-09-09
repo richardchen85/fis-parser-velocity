@@ -21,7 +21,9 @@
 
     <p>#commonMacro(1, 2, 3)</p>
 
+    #if(1>2)
     #parse('widget/footer/footer.vm')
+    #end
 
 <!--WIDGET_JS_HOLDER-->
 

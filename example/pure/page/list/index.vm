@@ -8,9 +8,11 @@
 </head>
 <body>
     #parse('widget/header/header.vm')
+    #parse('widget/common/common.vm')
 
+    #if(1>2)
     #parse('list/list.vm')
-
+    #end
     #parse('widget/footer/footer.vm')
 
 <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>

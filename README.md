@@ -20,6 +20,16 @@ widget
 
 .vm或.mock文件修改后，页面会自动重新编译，如果开启了livereload，可以自动刷新预览最新修改。
 
+按条件引入组件时，无论条件是否成立都引入，纯前端项目不能做到按需要加载，没办法。如：
+```html
+#if($isLogin)
+  #parse('widget/userinfo/userinfo.vm')
+#else
+  #parse('widget/userlogin/userlogin.vm')
+#end
+```
+会认为需要同时引入`userinfo`和`userlogin`的静态资源。
+
 ## 使用方法
 ```js
 fis.match('*.vm', {

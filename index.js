@@ -1,5 +1,4 @@
 var Engine = require('velocity').Engine,
-    Parser = require('velocity').parser,
     path = require('path'),
     util = fis.util;
 
@@ -24,33 +23,24 @@ function getContext(widgets, root) {
 }
 
 /**
- * 通过内容获取所有引用的文件
+ * 通过内容获取所有#parse引用的文件
  * @return
  *   [filepath, filepath...]
  */
-function getWidgets(filepath, opt) {
+function getParseFiles(filepath, opt) {
     var file = getAbsolutePath(filepath, opt.root),
         result = [],
         content = file ? util.read(file) : '',
-        ast = Parser.parse(content);
+        regParse = /(#?)#parse\('([^\)]+)'\)/g,
+        _tmpArr;
 
-    if(!ast.body) {
-        return result;
+    while((_tmpArr = regParse.exec(content)) !== null) {
+        if(_tmpArr[1] !== '' || result.indexOf(_tmpArr[2]) >= 0) {
+            continue;
+        }
+        result.push(_tmpArr[2]);
+        result = result.concat(getParseFiles(_tmpArr[2], opt));
     }
-    ast.body.forEach(function(p) {
-        var value;
-        // 只要#parse引入的文件
-        if(p.type != 'Parse') {
-            return;
-        }
-        value = p.argument.value;
-        // 过滤重复引用
-        if(result.indexOf(value) >= 0) {
-            return;
-        }
-        result.push(value);
-        result = result.concat(getWidgets(value, opt));
-    });
 
     return result;
 }
@@ -184,8 +174,8 @@ function renderTpl(content, file, opt) {
         return content;
     }
 
-    // 通过ast树获取#parse引入的文件
-    widgets = getWidgets(file.subpath, opt);
+    // 获取#parse引入的文件
+    widgets = getParseFiles(file.subpath, opt);
 
     // 添加全局mock到context
     if(commonMock) {

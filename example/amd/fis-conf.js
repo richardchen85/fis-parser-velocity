@@ -35,6 +35,9 @@ fis
         rExt: '.css',
         parser: fis.plugin('sass')
     })
+    .match('/widget/**.scss', {
+        packTo: '/widget/widget_pkg.css'
+    })
     .match('/widget/**.js', {
         isMod: true,
         packTo: '/widget/widget_pkg.js'
