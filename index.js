@@ -31,15 +31,15 @@ function getParseFiles(filepath, opt) {
     var file = getAbsolutePath(filepath, opt.root),
         result = [],
         content = file ? util.read(file) : '',
-        regParse = /(#?)#parse\('([^\)]+)'\)/g,
+        regParse = /(#?)#parse\(('|")([^\)]+)\2\)/g,
         _tmpArr;
 
     while((_tmpArr = regParse.exec(content)) !== null) {
-        if(_tmpArr[1] !== '' || result.indexOf(_tmpArr[2]) >= 0) {
+        if(_tmpArr[1] !== '' || result.indexOf(_tmpArr[3]) >= 0) {
             continue;
         }
-        result.push(_tmpArr[2]);
-        result = result.concat(getParseFiles(_tmpArr[2], opt));
+        result.push(_tmpArr[3]);
+        result = result.concat(getParseFiles(_tmpArr[3], opt));
     }
 
     return result;
