@@ -3,19 +3,25 @@ var Engine = require('velocity').Engine,
     util = fis.util;
 
 /**
- * 通过内容获取需要的上下文，读取引入文件的同名xxx-mock.js文件
+ * 读取组件同名mock文件，并加入页面依赖缓存，用于同步更新
  * @return
  *  [Object]
  */
-function getContext(widgets, root) {
+function getContext(widgets, pageFile, root) {
     var context = {};
 
     widgets = util.isArray(widgets) ? widgets : [widgets];
     widgets.forEach(function(widget) {
+        // 如果是页面文件，则不加入依赖缓存
+        var dep = widget === pageFile.subpath;
         var file = getAbsolutePath(replaceExt(widget, '.mock'), root);
         if(file) {
             util.merge(context, require(file));
             delete require.cache[file];
+            if(dep) {
+                addDeps(getAbsolutePath(widget, root), pageFile);
+                addDeps(file, pageFile);
+            }
         }
     });
 
@@ -109,36 +115,28 @@ function addStatics(widgets, content, file, opt) {
             arrCss.push('<link rel="stylesheet" href="' + cssFile + '">\n');
         }
         if(loadJs && getAbsolutePath(jsFile, root)) {
-            // 模块化加载，只保存文件路径
-            if(loader) {
-                arrJs.push(jsFile);
-            } else {
-                arrJs.push('<script src="' + jsFile + '"></script>\n');
-            }
+            arrJs.push(jsFile);
         }
     });
 
-    if(arrJs.length > 0) {
-        // 非模块化直接拼接script标签
-        if(!loader) {
-            strJs = arrJs.join('');
-        } else {
-            // 如果开启同步加载，需要script标签直接引入
-            if(loadSync) {
-                arrJs.forEach(function(js) {
-                    strJs += '<script src="' + js + '"></script>\n';
-                })
-            }
-            switch(loader) {
-                case 'require':
-                case 'requirejs':
-                case 'modjs':
-                    strJs += '<script>require(["' + arrJs.join('","') + '"]);</script>\n';
-                    break;
-                case 'seajs.use':
-                case 'seajs':
-                    strJs += '<script>seajs.use(["' + arrJs.join('","') + '"]);</script>\n';
-            }
+    // 非模块化直接拼接script标签
+    arrJs.forEach(function(jsFile) {
+        strJs += '<script src="' + jsFile + '"></script>\n';
+    });
+    if(loader) {
+        // 如果未开启同步加载，先清空strJs
+        if(!loadSync) {
+            strJs = '';
+        }
+        switch(loader) {
+            case 'require':
+            case 'requirejs':
+            case 'modjs':
+                strJs += '<script>require(["' + arrJs.join('","') + '"]);</script>\n';
+                break;
+            case 'seajs.use':
+            case 'seajs':
+                strJs += '<script>seajs.use(["' + arrJs.join('","') + '"]);</script>\n';
         }
     }
 
@@ -184,29 +182,17 @@ function renderTpl(content, file, opt) {
         addDeps(file, commonMock);
     }
 
-    // 将页面文件同名xxx-mock.js文件加入context
-    util.merge(context, getContext(file.subpath, root));
+    // 将页面文件同名mock文件加入context
+    util.merge(context, getContext(file.subpath, file, root));
 
-    // 将页面文件同名xxx-mock.js加入依赖缓存，用于同步更新
-    pageMock = getAbsolutePath(replaceExt(file.subpath, '.mock'), root);
-    pageMock && addDeps(file, pageMock);
-
-    // 将widgets的xxx-mock.js文件加入context
-    util.merge(context, getContext(widgets, root));
+    // 将widgets的mock文件加入context
+    util.merge(context, getContext(widgets, file, root));
 
     // 得到解析后的文件内容
     content = parse ? new Engine(opt).render(context) : content;
 
     // 添加widgets的js和css依赖到输入内容
     content = addStatics(widgets, content, file, opt);
-
-    // 添加widget依赖到fis缓存，用于同步更新
-    widgets.forEach(function(widget) {
-        var tpl = getAbsolutePath(widget, root);
-        var mock = getAbsolutePath(replaceExt(widget, '.mock'), root);
-        tpl && addDeps(file, tpl);
-        mock && addDeps(file, mock);
-    });
 
     return content;
 }
