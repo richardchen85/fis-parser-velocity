@@ -99,7 +99,8 @@ function addStatics(widgets, content, file, opt) {
         rJsHolder = /<!--\s?WIDGET_JS_HOLDER\s?-->/;
 
     widgets.forEach(function(widget) {
-        var widget = widget[0] === '/' ? widget : '/' + widget,
+        widget = widget[0] === '/' ? widget : '/' + widget;
+        var
             scssFile = replaceExt(widget, '.scss'),
             lessFile = replaceExt(widget, '.less'),
             cssFile = replaceExt(widget, '.css'),
@@ -163,7 +164,6 @@ function addStatics(widgets, content, file, opt) {
 function renderTpl(content, file, opt) {
     var widgets,
         context = {},
-        pageMock,
         commonMock = opt.commonMock,
         root = opt.root,
         parse = opt.parse;
