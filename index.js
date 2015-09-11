@@ -13,14 +13,14 @@ function getContext(widgets, pageFile, root) {
     widgets = util.isArray(widgets) ? widgets : [widgets];
     widgets.forEach(function(widget) {
         // 如果是页面文件，则不加入依赖缓存
-        var dep = widget === pageFile.subpath;
+        var dep = widget !== pageFile.subpath;
         var file = getAbsolutePath(replaceExt(widget, '.mock'), root);
         if(file) {
             util.merge(context, require(file));
             delete require.cache[file];
+            addDeps(pageFile, file);
             if(dep) {
-                addDeps(getAbsolutePath(widget, root), pageFile);
-                addDeps(file, pageFile);
+                addDeps(pageFile, getAbsolutePath(widget, root));
             }
         }
     });
