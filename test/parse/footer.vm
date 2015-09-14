@@ -1,0 +1,2 @@
+<footer>$footer</footer>
+#parse('script.vm')

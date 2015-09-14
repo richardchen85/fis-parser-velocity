@@ -3,24 +3,79 @@ var Engine = require('velocity').Engine,
     util = fis.util;
 
 /**
+ * fis-parser-velocity
+ * @param content
+ * @param file
+ * @param settings
+ * @returns {String} 编译后的html内容
+ */
+var VMParser = module.exports = function(content, file, settings) {
+    var opt = require('./config.js');
+    util.merge(opt, settings);
+    opt.template = content;
+    opt.macro = VMParser.getAbsolutePath(opt.macro, opt.root);
+    opt.commonMock = VMParser.getAbsolutePath(opt.commonMock, opt.root);
+    return VMParser.renderTpl(content, file, opt);
+};
+
+/**
+ * 对文件内容进行渲染
+ */
+VMParser.renderTpl = function(content, file, opt) {
+    var widgets,
+        context = {},
+        commonMock = opt.commonMock,
+        root = opt.root,
+        parse = opt.parse;
+
+    if (content === '') {
+        return content;
+    }
+
+    // 获取#parse引入的文件
+    widgets = VMParser.getParseFiles(file.subpath, opt);
+
+    // 添加全局mock到context
+    if(commonMock) {
+        util.merge(context, require(commonMock));
+        delete require.cache[commonMock];
+        VMParser.addDeps(file, commonMock);
+    }
+
+    // 将页面文件同名mock文件加入context
+    util.merge(context, VMParser.getContext(file.subpath, file, root));
+
+    // 将widgets的mock文件加入context
+    util.merge(context, VMParser.getContext(widgets, file, root));
+
+    // 得到解析后的文件内容
+    content = parse ? new Engine(opt).render(context) : content;
+
+    // 添加widgets的js和css依赖到输入内容
+    content = VMParser.addStatics(widgets, content, file, opt);
+
+    return content;
+}
+
+/**
  * 读取组件同名mock文件，并加入页面依赖缓存，用于同步更新
  * @return
  *  [Object]
  */
-function getContext(widgets, pageFile, root) {
+VMParser.getContext = function (widgets, pageFile, root) {
     var context = {};
 
     widgets = util.isArray(widgets) ? widgets : [widgets];
     widgets.forEach(function(widget) {
         // 如果是页面文件，则不加入依赖缓存
         var dep = widget !== pageFile.subpath;
-        var file = getAbsolutePath(replaceExt(widget, '.mock'), root);
+        var file = VMParser.getAbsolutePath(VMParser.replaceExt(widget, '.mock'), root);
         if(file) {
             util.merge(context, require(file));
             delete require.cache[file];
-            addDeps(pageFile, file);
+            VMParser.addDeps(pageFile, file);
             if(dep) {
-                addDeps(pageFile, getAbsolutePath(widget, root));
+                VMParser.addDeps(pageFile, VMParser.getAbsolutePath(widget, root));
             }
         }
     });
@@ -33,8 +88,8 @@ function getContext(widgets, pageFile, root) {
  * @return
  *   [filepath, filepath...]
  */
-function getParseFiles(filepath, opt) {
-    var file = getAbsolutePath(filepath, opt.root),
+VMParser.getParseFiles = function(filepath, opt) {
+    var file = VMParser.getAbsolutePath(filepath, opt.root),
         result = [],
         content = file ? util.read(file) : '',
         regParse = /(#?)#parse\(('|")([^\)]+)\2\)/g,
@@ -45,7 +100,7 @@ function getParseFiles(filepath, opt) {
             continue;
         }
         result.push(_tmpArr[3]);
-        result = result.concat(getParseFiles(_tmpArr[3], opt));
+        result = result.concat(VMParser.getParseFiles(_tmpArr[3], opt));
     }
 
     return result;
@@ -55,7 +110,7 @@ function getParseFiles(filepath, opt) {
  * @example
  * replaceExt('/widget/a/a.html', '.css') => '/widget/a/a.css'
  */
-function replaceExt(pathname, ext) {
+VMParser.replaceExt = function(pathname, ext) {
     return pathname.substring(0, pathname.lastIndexOf('.')) + ext;
 }
 
@@ -65,7 +120,7 @@ function replaceExt(pathname, ext) {
  * @param root {Array} root目录数组
  * @return {String} 返回文件绝对路径或者null
  */
-function getAbsolutePath(file, root) {
+VMParser.getAbsolutePath = function(file, root) {
     var result = null;
     if(!file || !root || !util.isArray(root)) {
         return result;
@@ -82,7 +137,7 @@ function getAbsolutePath(file, root) {
 /**
  * 添加静态资源依赖
  */
-function addStatics(widgets, content, file, opt) {
+VMParser.addStatics = function(widgets, content, file, opt) {
     var
         // css文件数组
         arrCss = [],
@@ -101,21 +156,21 @@ function addStatics(widgets, content, file, opt) {
     widgets.forEach(function(widget) {
         widget = widget[0] === '/' ? widget : '/' + widget;
         var
-            scssFile = replaceExt(widget, '.scss'),
-            lessFile = replaceExt(widget, '.less'),
-            cssFile = replaceExt(widget, '.css'),
-            jsFile = replaceExt(widget, '.js');
+            scssFile = VMParser.replaceExt(widget, '.scss'),
+            lessFile = VMParser.replaceExt(widget, '.less'),
+            cssFile = VMParser.replaceExt(widget, '.css'),
+            jsFile = VMParser.replaceExt(widget, '.js');
 
-        if(getAbsolutePath(scssFile, root)) {
+        if(VMParser.getAbsolutePath(scssFile, root)) {
             arrCss.push('<link rel="stylesheet" href="' + scssFile + '">\n');
         }
-        if(getAbsolutePath(lessFile, root)) {
+        if(VMParser.getAbsolutePath(lessFile, root)) {
             arrCss.push('<link rel="stylesheet" href="' + lessFile + '">\n')
         }
-        if(getAbsolutePath(cssFile, root)) {
+        if(VMParser.getAbsolutePath(cssFile, root)) {
             arrCss.push('<link rel="stylesheet" href="' + cssFile + '">\n');
         }
-        if(loadJs && getAbsolutePath(jsFile, root)) {
+        if(loadJs && VMParser.getAbsolutePath(jsFile, root)) {
             arrJs.push(jsFile);
         }
     });
@@ -158,51 +213,12 @@ function addStatics(widgets, content, file, opt) {
     return content;
 }
 
-/**
- * 对文件内容进行渲染
- */
-function renderTpl(content, file, opt) {
-    var widgets,
-        context = {},
-        commonMock = opt.commonMock,
-        root = opt.root,
-        parse = opt.parse;
-
-    if (content === '') {
-        return content;
-    }
-
-    // 获取#parse引入的文件
-    widgets = getParseFiles(file.subpath, opt);
-
-    // 添加全局mock到context
-    if(commonMock) {
-        util.merge(context, require(commonMock));
-        delete require.cache[commonMock];
-        addDeps(file, commonMock);
-    }
-
-    // 将页面文件同名mock文件加入context
-    util.merge(context, getContext(file.subpath, file, root));
-
-    // 将widgets的mock文件加入context
-    util.merge(context, getContext(widgets, file, root));
-
-    // 得到解析后的文件内容
-    content = parse ? new Engine(opt).render(context) : content;
-
-    // 添加widgets的js和css依赖到输入内容
-    content = addStatics(widgets, content, file, opt);
-
-    return content;
-}
-
 /*
  * 对引入本widget的文件添加FIS依赖，当本widget模板文件修改时，自动编译
  * @param {Object} a
  * @param {Object} b
  */
-function addDeps(a, b) {
+VMParser.addDeps = function(a, b) {
     if (a && a.cache && b) {
         if (b.cache) {
             a.cache.mergeDeps(b.cache);
@@ -210,19 +226,3 @@ function addDeps(a, b) {
         a.cache.addDeps(b.realpath || b);
     }
 }
-
-/**
- * fis-parser-velocity
- * @param content
- * @param file
- * @param settings
- * @returns {String} 编译后的html内容
- */
-module.exports = function(content, file, settings) {
-    var opt = require('./config.js');
-    util.merge(opt, settings);
-    opt.template = content;
-    opt.macro = getAbsolutePath(opt.macro, opt.root);
-    opt.commonMock = getAbsolutePath(opt.commonMock, opt.root);
-    return renderTpl(content, file, opt);
-};

@@ -23,7 +23,9 @@ fis.match('::package', {
 // 使用fis-parser-velocity直接编译html文件
 fis
     .match('*.vm', {
-        parser: fis.plugin('velocity', vmConf),
+        parser: function(content, file) {
+            return require('../../')(content, file, vmConf);
+        },
         rExt: '.html',
         loaderLang: 'html'
     })
@@ -48,7 +50,9 @@ var tmpVelocity = util.merge({parse: false}, vmConf);
 fis
     .media('vm')
     .match('*.vm', {
-        parser: fis.plugin('velocity', tmpVelocity),
+        parser: function(content, file) {
+            return require('../../')(content, file, tmpVelocity);
+        },
         rExt: '.vm',
         deploy: fis.plugin('local-deliver', {
             to: './output/template'
