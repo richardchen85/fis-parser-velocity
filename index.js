@@ -69,14 +69,15 @@ VMParser.getContext = function (widgets, pageFile, root) {
     widgets.forEach(function(widget) {
         // 如果是页面文件，则不加入依赖缓存
         var dep = widget !== pageFile.subpath;
-        var file = VMParser.getAbsolutePath(VMParser.replaceExt(widget, '.mock'), root);
-        if(file) {
-            util.merge(context, require(file));
-            delete require.cache[file];
-            VMParser.addDeps(pageFile, file);
-            if(dep) {
-                VMParser.addDeps(pageFile, VMParser.getAbsolutePath(widget, root));
-            }
+        var mock = VMParser.getAbsolutePath(VMParser.replaceExt(widget, '.mock'), root);
+        var vm = VMParser.getAbsolutePath(widget, root);
+        if(mock) {
+            util.merge(context, require(mock));
+            delete require.cache[mock];
+            VMParser.addDeps(pageFile, mock);
+        }
+        if(dep && vm) {
+            VMParser.addDeps(pageFile, vm);
         }
     });
 
