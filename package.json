@@ -1,6 +1,6 @@
 {
   "name": "fis-parser-velocity",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "A parser for fis to compile velocity template",
   "main": "index.js",
   "scripts": {

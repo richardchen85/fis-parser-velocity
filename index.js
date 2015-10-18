@@ -93,7 +93,7 @@ VMParser.getParseFiles = function(filepath, opt) {
     var file = VMParser.getAbsolutePath(filepath, opt.root),
         result = [],
         content = file ? util.read(file) : '',
-        regParse = /(#?)#parse\(('|")([^\)]+)\2\)/g,
+        regParse = /(#?)#parse\(\s*('|")([^\)]+)\2\s*\)/g,
         _tmpArr;
 
     while((_tmpArr = regParse.exec(content)) !== null) {
