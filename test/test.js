@@ -6,10 +6,13 @@ Object.defineProperty(global, 'fis', {
 });
 
 var expect = require('chai').expect;
-var parser = require('../index2');
 var path = require('path');
 
+var util = fis.util;
+var parser = require('../index')('', null, null);
+
 describe('VMParser', function() {
+  var file =
   it('VMParser.replaceExt', function() {
     expect(parser.replaceExt('/widget/header/header.vm', '.mock')).to.equal('/widget/header/header.mock');
   });

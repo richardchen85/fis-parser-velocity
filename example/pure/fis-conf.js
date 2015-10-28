@@ -7,6 +7,10 @@ var vmConf = {
     root: [root, root + '/page']
 }
 
+fis.match('::package', {
+    postpackager: fis.plugin('loader')
+})
+
 // 使用fis-parser-velocity直接编译html文件
 fis
     .match('*.vm', {
@@ -16,7 +20,10 @@ fis
         rExt: '.html',
         loaderLang: 'html'
     })
-    .match('{/page/macro,/widget/**}.{vm,json}', {
+    .match('{/page/macro,/widget/**}.{vm,json,mock}', {
+        release: false
+    })
+    .match('/page/**.mock', {
         release: false
     })
     // 加添scss编译

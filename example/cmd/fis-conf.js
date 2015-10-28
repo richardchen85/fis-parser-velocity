@@ -35,6 +35,9 @@ fis
     .match('{/page/macro,/widget/**}.{vm,json}', {
         release: false
     })
+    .match('/page/**.mock', {
+        release: false
+    })
     // 加添scss编译
     .match('*.scss', {
         rExt: '.css',
