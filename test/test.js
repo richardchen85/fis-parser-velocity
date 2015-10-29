@@ -9,10 +9,14 @@ var expect = require('chai').expect;
 var path = require('path');
 
 var util = fis.util;
-var parser = require('../index')('', null, null);
+var opt = {
+  root: [path.resolve('.')]
+};
+var file = new File(path.resolve('./parse/index.vm'));
+var content = fis.util.read(file);
+var parser = require('../index')(content, file, opt);
 
 describe('VMParser', function() {
-  var file =
   it('VMParser.replaceExt', function() {
     expect(parser.replaceExt('/widget/header/header.vm', '.mock')).to.equal('/widget/header/header.mock');
   });

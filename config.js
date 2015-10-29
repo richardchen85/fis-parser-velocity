@@ -1,3 +1,5 @@
+var path = require('path');
+
 module.exports = {
   // 是否引入js
   loadJs: true,
@@ -26,5 +28,5 @@ module.exports = {
   // 全局的mock文件，相对于root，默认为null
   commonMock: null,
   // velocity的root配置，默认为项目根目录
-  root: [fis.project.getProjectPath()]
+  root: [path.resolve('.')]
 };
