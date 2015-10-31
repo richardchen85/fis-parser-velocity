@@ -1,3 +1,0 @@
-#macro(commonMacro, $a, $b, $c)
-	received parameters: $a , $b , $c
-#end

@@ -1,8 +1,6 @@
 var path = require('path');
 
 module.exports = {
-  // 是否引入js
-  loadJs: true,
   /**
    * 模块化加载框架 [requirejs|modjs|seajs]
    * 为null时，每个js文件用script标签引入

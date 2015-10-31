@@ -1,0 +1,7 @@
+#style('static/css/base.css')
+
+#parse('widget/header/header.vm')
+
+#parse('widget/footer/footer.vm')
+
+#script('widget/jquery/jquery.js')

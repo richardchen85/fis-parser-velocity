@@ -1,0 +1,16 @@
+module.exports = {
+    login: true,
+    util: {
+        add: function(a, b) {
+            return a + b;
+        }
+    },
+    user: {
+        addr: function() {
+            return {
+                zipcode: '3100002',
+                city: 'Hangzhou'
+            }
+        }
+    }
+}

@@ -1,0 +1,3 @@
+module.exports = {
+  appName: 'fis-parser-velocity'
+}

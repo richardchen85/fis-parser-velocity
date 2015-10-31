@@ -1,0 +1,3 @@
+<footer>$footer</footer>
+
+#framework('static/lib/require.js')

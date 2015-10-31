@@ -7,49 +7,46 @@ Object.defineProperty(global, 'fis', {
 
 var expect = require('chai').expect;
 var path = require('path');
-
 var util = fis.util;
+
 var opt = {
   root: [path.resolve('.')]
 };
-var file = new File(path.resolve('./parse/index.vm'));
-var content = fis.util.read(file);
-var parser = require('../index')(content, file, opt);
+var file = {
+  subpath: './index.vm'
+};
+var content = fis.util.read(file.subpath);
+var parser = new require('../lib')(content, file, opt);
 
 describe('VMParser', function() {
-  it('VMParser.replaceExt', function() {
-    expect(parser.replaceExt('/widget/header/header.vm', '.mock')).to.equal('/widget/header/header.mock');
+  it('replaceExt', function() {
+    var source = '/widget/header/header.vm';
+    var result = '/widget/header/header.mock';
+    expect(parser.replaceExt(source, '.mock')).to.equal(result);
   });
 
-  it('VMParser.getAbsolutePath', function() {
-    var file = '/page/macro.vm';
-    var root = [
-      path.resolve('.') + '/example/pure'
-    ];
-    expect(parser.getAbsolutePath(file, root)).to.equal(path.resolve(root[0] + '/' + file));
+  it('getAbsolutePath', function() {
+    var file = '/index.vm';
+    expect(parser.getAbsolutePath(file, opt.root)).to.equal(path.resolve(opt.root[0] + '/' + file));
   });
 
-  it('VMParser.getParseFiles', function() {
-    var filepath = 'index.vm';
-    var opt = {
-      root: [__dirname + '/parse']
-    };
-    expect(parser.getParseFiles(filepath, opt)).to.have.length(3);
+  it('compileParse', function() {
+    parser.compileParse(content);
+    expect(parser.vmFiles).to.have.length(2);
+    expect(parser.mockFiles).to.have.length(2);
   });
 
+  it('compileStatic', function() {
+    parser.compileStatic(content);
+    expect(parser.cssFiles).to.have.length(1);
+    expect(parser.framework).to.equal('static/lib/require.js');
+    expect(parser.jsFiles).to.have.length(2);
+  });
 
-  it('VMParser.getContext', function() {
-    var file = 'index.vm';
-    var opt = {
-      root: [__dirname + '/parse']
-    };
-    var widgets = parser.getParseFiles(file, opt);
-    var pageFile = {
-      subpath: file
-    };
-    expect(parser.getContext(widgets, pageFile, opt.root)).to.have.property('script');
-    expect(parser.getContext(widgets, pageFile, opt.root)).to.have.property('header');
-
+  it('getContext', function() {
+    var context = parser.getContext();
+    expect(context).to.have.property('header');
+    expect(context).to.have.property('footer');
   });
 
 });
