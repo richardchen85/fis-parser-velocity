@@ -1,7 +1,9 @@
-var root = fis.project.getProjectPath();
-var util = fis.util;
-var packed = true;
-var vmConf = {
+'use strict'
+
+const root = fis.project.getProjectPath();
+const util = fis.util;
+let packed = true;
+let vmConf = {
     loader: 'requirejs',// null,requirejs,modjs,seajs
     loadSync: true,
     macro: '/macro.vm',
@@ -30,7 +32,7 @@ fis.match('::package', {
 // 使用fis-parser-velocity直接编译html文件
 fis
     .match('*.vm', {
-        parser: function(content, file) {
+        parser: (content, file) => {
             return require('../')(content, file, vmConf);
         },
         rExt: '.html',
@@ -45,7 +47,7 @@ fis
     // 加添scss编译
     .match('*.scss', {
         rExt: '.css',
-        parser: fis.plugin('sass')
+        parser: fis.plugin('node-sass')
     })
 
 // 合并配置
@@ -65,11 +67,11 @@ if(packed) {
 }
 
 // 只发布VM文件
-var tmpVelocity = util.merge({parse: false}, vmConf);
+let tmpVelocity = util.merge({parse: false}, vmConf);
 fis
     .media('vm')
     .match('*.vm', {
-        parser: function(content, file) {
+        parser: (content, file) => {
             return require('../')(content, file, tmpVelocity);
         },
         rExt: '.vm',
