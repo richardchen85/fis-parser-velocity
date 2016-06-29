@@ -1,9 +1,8 @@
 # fis-parser-velocity
 A parser for fis to compile velocity template（基于fis的velocity模板解释器）
 
-从0.2.0版本开始，模拟数据文件扩展名从.json变成了.mock，主要考虑velocity tools的需求，.mock文件内容其实是一个`nodejs`模块，可以满足velocity tools调用方法，如`$util.add(1,1)`输出 `2`。
-
 ## 使用方法
+
 ```js
 fis.match('*.vm', {
   parser: fis.plugin('velocity', {
@@ -64,12 +63,15 @@ widget
 ### #style('xxx')
 用于对css文件的引入。
 `#style('xxx.css')` 会解析成 `<link rel='stylesheet' href='xxx.css'/>`。也可以使用以下方式内嵌css代码：
+
 ```
   #style()
     body { background: #fff; }
   #endstyle
 ```
+
 会解析成：
+
 ```
 <style>
   body { background: #fff; }
@@ -81,21 +83,28 @@ widget
 
 ### #script('xxx')
 用于引入纯js组件，如果有同名的css文件，会一同被加入依赖列表，例如：
+
 ```
 #script('widget/a/a.js')
 ```
+
 会解析成以下代码：
+
 ```
 <script src='widget/a/a.js'></script>
 <link rel='stylesheet' href='widget/a/a.css'/>
 ```
+
 同样，也可以使用如下方式内嵌js代码：
+
 ```
 #script()
   ... some javascript code ...
 #endscript
 ```
+
 会解析成：
+
 ```
 <script>
   ... some javascript code ...
@@ -104,13 +113,27 @@ widget
 
 ## 需要注意的地方
 按条件引入组件时，无论条件是否成立都引入，纯前端项目不能做到按需要加载，没办法。如：
-```html
+
+```
 #if($isLogin)
   #parse('widget/userinfo/userinfo.vm')
 #else
   #parse('widget/userlogin/userlogin.vm')
 #end
 ```
+
 会认为需要同时引入`userinfo`和`userlogin`的静态资源。
 
 使用模块化框架时，请参考[fis3-postpackager-loader](https://github.com/fex-team/fis3-postpackager-loader)的使用规范，如果页面中没有明确使用require.js|mod.js|sea.js是，对引用模块化框架的`script`标签加`data-loader`属性，即`<script data-loader src='/path/to/xxx.js'></script>`，这样才能正确插入`sourcemap`。
+
+## changeLog
+
+##### v0.3.2
+* 使用部分es6语法，所以需要nodejs4.0+
+* 更新fis3到v3.4.16
+
+##### v0.3.1
+* 更新fis3到v3.3.0
+
+##### v0.2.1
+* 从0.2.0版本开始，模拟数据文件扩展名从.json变成了.mock，主要考虑velocity tools的需求，.mock文件内容其实是一个`nodejs`模块，可以满足velocity tools调用方法，如`$util.add(1,1)`输出 `2`。
