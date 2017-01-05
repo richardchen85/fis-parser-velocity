@@ -1,6 +1,6 @@
 {
   "name": "fis-parser-velocity",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "A parser for fis to compile velocity template",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,6 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "fis3": "^3.4.25"
+    "fis3": "^3.4.31"
   }
 }
