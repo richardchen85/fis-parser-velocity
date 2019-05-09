@@ -1,0 +1,11 @@
+module.exports = {
+  "articleSku": {
+    "imagePath": "jfs/t1/32393/4/11031/243781/5cb401a3Ed8fa13cd/f58eda5810bd5ef9.jpg",
+    "intelligentSkuContent": "战神风格展现游戏机强者风范，凸显玩家品味，加之背光键盘设计，还可根据环境自动调节亮度哦，四核是多任务的绝对杀手，多线作战也毫不胆怯，迎难而上。",
+    "intelligentSkuTitle": "背光游戏键盘，特效全开",
+    "isDelete": "1",
+    "name": "神舟(HASEE)战神Z7M-KP5SC 英特尔酷睿i5 GTX1050Ti独显15.6英寸游戏笔记本电脑(i5-8300H 8G 256GSSD+1T)IPS",
+    "skuId": 7197076,
+    "state": "1"
+  },
+}

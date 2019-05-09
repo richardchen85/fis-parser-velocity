@@ -1,0 +1,48 @@
+##数字跟中文数字对应起来
+#set($numMap = {
+    '1':'一',
+    '2':'二',
+    '3':'三',
+    '4':'四',
+    '5':'五',
+    '6':'六',
+    '7':'七',
+    '8':'八',
+    '9':'九'
+})
+
+##将str末尾的符号去掉
+#macro(sliceLast $str $head $tail)
+    #set($len = $str.length - $tail)
+    #set($res = $str.slice($head,$len))
+    $res
+#end
+
+##将数组里的某些属性串连起来
+#macro(joinAttr $array $attrsArray $join)
+    #set($res = "")
+    #foreach($item in $array)
+        #foreach($attr in $attrsArray)
+            #set($res = $res + $!item[$attr])
+        #end
+        #set($res = $!res + $!join)
+    #end
+    #sliceLast($res,0,1)
+#end
+
+##图片的路径整合
+#macro(makeImgPath $imgPath $n)
+    #if($imgPath != "")
+        #set($srcPrefix = $imgPath.substring(0,3))
+        #if($srcPrefix == "jfs")
+            #set($completePath = "//img30.360buyimg.com/" + $n +"/" + $imgPath)
+        #end
+        $!{completePath}
+    #end
+#end
+
+##商品链接的跳转
+#macro(jumpToItem $skuId)
+    #set($jumpHref = "//item.jd.com/" + $skuId + ".html")
+    $!jumpHref
+#end##

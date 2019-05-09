@@ -28,8 +28,8 @@ describe('VMParser', () => {
   });
   it('compileParse', () => {
     parser.compileParse(content);
-    expect(parser.vmFiles).to.have.length(2);
-    expect(parser.mockFiles).to.have.length(2);
+    expect(parser.vmFiles).to.have.length(4);
+    expect(parser.mockFiles).to.have.length(3);
   });
   it('compileStatic', () => {
     parser.compileStatic(content);

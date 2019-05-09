@@ -1,6 +1,10 @@
 #style('static/css/base.css')
 
+#parse('marcro.vm')
+
 #parse('widget/header/header.vm')
+
+#parse('widget/content/content.vm')
 
 #parse('widget/footer/footer.vm')
 

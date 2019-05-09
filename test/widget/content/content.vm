@@ -1,0 +1,19 @@
+<a class="sku-card clearfix" title="$!{articleSku.name}" href="#jumpToItem(${articleSku.skuId})"
+   target="_blank">
+    <!--img此处统一使用n7服务器渲染220*220的图片，这样在苹果手机上不会模糊-->
+    <img
+        src="#makeImgPath(${articleSku.imagePath},'n7')"
+        alt="$!{articleSku.name}"
+        class="card-img">
+    <div class="detail">
+        <div class="sku-title">$!{articleSku.name}</div>
+        <div class="sku-price light-price" data-skuId="${articleSku.skuId}"><span>暂无报价</span></div>
+        <div class="sku-comment">
+            <span class="total">$!{commentCountStr}评论</span>
+            #if(${commentCount})
+                <span class="excellent">$!{article.commentSummary.goodRateShow}%好评</span>
+                <span class="good-comment"></span>
+            #end
+        </div>
+    </div>
+</a>
