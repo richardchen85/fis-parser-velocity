@@ -1,4 +1,5 @@
 # fis-parser-velocity
+
 A parser for fis to compile velocity template（基于fis的velocity模板解释器）
 
 ## 使用方法
@@ -41,16 +42,16 @@ fis.match('*.vm', {
 ```
 
 ## 组件化实现方法
-<pre>
-<code>
+
+```nohighlight
 widget
  └ header
    ├ header.vm
    ├ header.js
    ├ header.mock
    └ header.css
-</code>
-</pre>
+```
+
 使用`#parse('widget/header/header.vm')`指令引入`header`组件，插件会自动将`header.js`和`header.css`插入html文档中，并将`header.mock`文件的内容作为解析`header`组件的数据源。
 
 默认组件的css和js文件会分别插入`</head>`和`</body>`标签之前，也可以自定义插入位置，css插入占位符为`<!--WIDGET_CSS_HOLDER-->`，js插入占位符为`<!--WIDGET_JS_HOLDER-->`。
@@ -58,13 +59,15 @@ widget
 .vm或.mock文件修改后，页面会自动重新编译，如果开启了livereload，可以自动刷新预览最新修改。
 
 ## 新增组件化指令
+
 新增了三条用于组件化的指令：#style, #framework, #script。
 
 ### #style('xxx')
+
 用于对css文件的引入。
 `#style('xxx.css')` 会解析成 `<link rel='stylesheet' href='xxx.css'/>`。也可以使用以下方式内嵌css代码：
 
-```
+```nohighlight
   #style()
     body { background: #fff; }
   #endstyle
@@ -72,32 +75,34 @@ widget
 
 会解析成：
 
-```
+```html
 <style>
   body { background: #fff; }
 </style>
 ```
 
 ### #framework('xxx')
+
 用于引入模块化框架文件，如：requirejs, modjs, seajs等，比如：`#framework('lib/require.js')` 会解析成 `<script data-loader src='lib/require.js'></script>`。
 
 ### #script('xxx')
+
 用于引入纯js组件，如果有同名的css文件，会一同被加入依赖列表，例如：
 
-```
+```nohighlight
 #script('widget/a/a.js')
 ```
 
 会解析成以下代码：
 
-```
+```html
 <script src='widget/a/a.js'></script>
 <link rel='stylesheet' href='widget/a/a.css'/>
 ```
 
 同样，也可以使用如下方式内嵌js代码：
 
-```
+```nohighlight
 #script()
   ... some javascript code ...
 #endscript
@@ -105,16 +110,17 @@ widget
 
 会解析成：
 
-```
+```html
 <script>
   ... some javascript code ...
 </script>
 ```
 
 ## 需要注意的地方
+
 按条件引入组件时，无论条件是否成立都引入，纯前端项目不能做到按需要加载，没办法。如：
 
-```
+```nohighlight
 #if($isLogin)
   #parse('widget/userinfo/userinfo.vm')
 #else
@@ -129,21 +135,27 @@ widget
 ## changeLog
 
 ##### v0.3.5
+
 * 修复多层 #parse 解析不完整问题
 
 ##### v0.3.4
+
 * 更新fis3到v3.4.31
 * 修改一些语法
 
 ##### v0.3.3
+
 * 增加.scss文件依赖支持
 
 ##### v0.3.2
+
 * 使用部分es6语法，所以需要nodejs4.0+
 * 更新fis3到v3.4.16
 
 ##### v0.3.1
+
 * 更新fis3到v3.3.0
 
 ##### v0.2.1
+
 * 从0.2.0版本开始，模拟数据文件扩展名从.json变成了.mock，主要考虑velocity tools的需求，.mock文件内容其实是一个`nodejs`模块，可以满足velocity tools调用方法，如`$util.add(1,1)`输出 `2`。
