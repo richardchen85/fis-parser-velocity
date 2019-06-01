@@ -1,0 +1,9 @@
+<footer>
+    $footer
+    <script>
+        console.log('inline script');
+    </script><!--ignore-->
+</footer>
+#framework('/root/static/lib/require.js')
+#script('/root/widget/jquery.scrollbar/jquery.scrollbar.js')
+#script('/root/widget/jquery.share/jquery.share.js')

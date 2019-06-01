@@ -1,1 +1,0 @@
-return __inline('/widget/template/text.txt');

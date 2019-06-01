@@ -1,0 +1,19 @@
+{
+  "name": "example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "fis-conf.js",
+  "scripts": {
+    "del": "rm -rf ./output",
+    "release": "npm run del && fis3 release -c -d ./output",
+    "deploy": "npm run del && fis3 release prod"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fis3-hook-amd": "^0.2.4",
+    "fis3-hook-cmd": "^0.1.2",
+    "fis3-postpackager-loader": "^2.1.11"
+  }
+}
