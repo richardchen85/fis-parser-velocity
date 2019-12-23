@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/richard-chen-1985/fis-parser-velocity"
+    "url": "https://github.com/richardchen85/fis-parser-velocity"
   },
   "keywords": [
     "fis",
@@ -18,9 +18,9 @@
   "author": "richard chen",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/richard-chen-1985/fis-parser-velocity/issues"
+    "url": "https://github.com/richardchen85/fis-parser-velocity/issues"
   },
-  "homepage": "https://github.com/richard-chen-1985/fis-parser-velocity",
+  "homepage": "https://github.com/richardchen85/fis-parser-velocity",
   "dependencies": {
     "velocity": "^0.7.2"
   },
